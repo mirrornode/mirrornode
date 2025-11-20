@@ -1,0 +1,597 @@
+mirrornode/
+  architecture/
+  codex/
+  glyph-engine/
+  identity/
+  narrative/
+  frontend/
+    web/
+  backend/
+    api/
+    auth/
+    pipelines/
+  infra/
+  business/
+  docs/
+  README.md
+
+# MIRRORNODE (monorepo)
+
+Canonical monorepo for the MIRRORNODE / ROTAN system.
+
+Structure:
+- architecture/ — system map & pipelines
+- codex/ — mythos, symbols, recursion formulae
+- glyph-engine/ — procedural glyph engine spec & API
+- identity/ — identity harmonics, obscure calculus
+- narrative/ — narrative engine & modules
+- frontend/web — React frontend scaffold
+- backend/api — FastAPI backend scaffold
+- infra/ — docker, CI/CD
+- business/ — revenue and product plans
+- docs/ — guidelines and integration notes
+
+Start:
+- Backend (FastAPI): `uvicorn backend.api.main:app --reload`
+- Frontend: `cd frontend/web && npm install && npm run dev`
+
+# MIRRORNODE_ROOT_MAP
+
+## Purpose
+Single-source architecture map binding symbolic recursion to software infrastructure.
+
+## Overview
+- Monorepo root provides canonical sources.
+- Core runtime: backend (FastAPI) + glyph engine service.
+- Frontend: React app with HUD modules and console.
+- Identity & narrative are treated as domain services (modules) with manifest files and API endpoints.
+
+## Module map
+- codex/ — canonical mythos & symbol definitions
+- glyph-engine/ — service: generates glyph payloads, exposures via REST
+- identity/ — engines for identity harmonics, lifecycle handlers
+- narrative/ — narrative engine, story nodes, triggers
+- frontend/web — UI, HUD, interactive modules
+- backend/api — routes for glyph, identity, narrative, auth
+- infra/ — docker + CI/CD
+
+## Data flows
+1. User -> frontend -> backend/api
+2. backend calls glyph-engine and identity modules
+3. glyph outputs stored in assets/ or returned to client
+4. narrative engine publishes events to frontend (WebSocket) and logs to codex
+
+## Recursion bindings
+Each module includes a `recursion_manifest.md` linking to codex entries to preserve symbolic integrity.
+
+## Deployment notes
+- Start as single container compose for dev.
+- Production: separate services with proper secrets management.
+
+# System Pipelines
+
+## CI Pipeline (ci.yml)
+- Lint
+- Unit tests (backend + frontend)
+- Build docker images
+- Deploy to staging on merge to main
+
+## Data pipelines
+- Glyph generation: request -> glyph-engine -> cache (redis) -> persisted as artifacts
+- Identity sync: inbound user events -> identity pipeline -> harmonics computed -> identity profile updated
+
+## Observability
+- Logging (structured JSON)
+- Tracing: lightweight opentelemetry stub in backend
+
+## Security
+- JWT auth across API
+- Rate limits on glyph endpoint
+
+# MIRRORNODE_CODEX_MASTER
+
+This is the master codex — source of truth for all mythos, symbols, recursion formulae.
+
+## Sections
+- Symbols Glossary -> `symbols_glossary.md`
+- Recursion Formulae -> `recursion_formulae.md`
+- Rotan Mythos -> `rotan_mythos.md`
+
+## Usage
+- All modules reference codex entries by stable ID (e.g., `codex:symbol:VAEL_001`)
+- When adding a new glyph or symbol, append to `symbols_glossary.md` and include `recursion_manifest` in the module using it.
+
+# Symbols Glossary
+
+- VAEL_001 — The Anchor Sigil: represents grounding, used in identity matching.
+- THOTH_FREQ — Procedural frequency constant for glyph modulation.
+- ABRAXAS_004 — Mirror Vector: used to invert narrative nodes.
+
+(Extend with new entries. Each entry: id, canonical name, description, example usage, tags)
+
+# Recursion Formulae
+
+## Notation
+- Symbols in ALL_CAPS are codex ids.
+- Operators:
+  - × : overlay
+  - → : transformation
+  - IO : input-output mapping
+
+## Core formula
+(P × D) → IO
+Where P = persona vector, D = domain resonance.
+
+(Extend per design notes)
+
+# Rotan Mythos
+
+Rotan stages and narrative spine. Maintain chronology and canonical references here.
+
+(Keep ritual descriptions brief and technical; codify names, triggers, and expected transformations)
+
+# Glyph Engine — Spec
+
+Purpose: Procedural generation of glyphs (dual-expressions) for UI, narrative triggers, and identity mapping.
+
+## Core responsibilities
+- Accept symbolic input (codex IDs + parameters)
+- Produce a stable glyph object:
+  - id
+  - svg / vector primitive
+  - semantic tags
+  - frequency matrix
+  - runtime instructions (binding hints)
+
+## API endpoints (design)
+- POST /generate — generate glyph from request
+- GET /glyph/{id} — fetch glyph artifact
+- POST /render — render glyph to image/svg (optional)
+- GET /schema — return glyph schema
+
+## Glyph schema (brief)
+```json
+{
+  "id": "glyph-<uuid>",
+  "codex_refs": ["VAEL_001"],
+  "dual_expression": {
+    "runeA": "...",
+    "runeB": "..."
+  },
+  "frequency": [440, 880],
+  "vector": {"type": "svg", "path": "..."},
+  "metadata": {"tags":["anchor","identity"], "created_at":"..."}
+}
+
+# `glyph-engine/glyph_schemas.md`
+```markdown
+# Glyph schemas
+
+Define JSON Schema and sample payloads. Use this file as source when generating `models.py`.
+
+# Rune Dual Expressions
+
+Rules for generating paired runes (A,B) that express duality.
+
+- A: active vector (agent)
+- B: passive vector (mirror)
+- Binding rules: A ⟂ B must sum to harmonic constant THOTH_FREQ
+
+(Procedural algorithms to be implemented in `glyph-engine` service)
+
+# Minimal glyph model dataclass for backend / glyph engine usage
+from dataclasses import dataclass
+from typing import List, Dict
+import uuid
+from datetime import datetime
+
+@dataclass
+class Glyph:
+    id: str
+    codex_refs: List[str]
+    dual_expression: Dict[str, str]
+    frequency: List[float]
+    vector: Dict[str, str]
+    metadata: Dict[str, str]
+    created_at: str
+
+    @staticmethod
+    def new(codex_refs, dual_expression, frequency, vector, metadata=None):
+        return Glyph(
+            id=str(uuid.uuid4()),
+            codex_refs=codex_refs,
+            dual_expression=dual_expression,
+            frequency=frequency,
+            vector=vector,
+            metadata=metadata or {},
+            created_at=datetime.utcnow().isoformat()+"Z"
+        )
+
+# Identity Harmonics
+
+Design doc for identity lifecycle and harmonics engine.
+
+## Concepts
+- Persona Vector: numeric vector representing user state.
+- Harmonics: derived spectral features used to match glyphs and narrative arcs.
+- Identity profile: persistent state.
+
+## APIs
+- compute_harmonics(persona_vector) -> harmonics_vector
+- match_to_glyphs(harmonics_vector) -> prioritized glyph list
+- evolve_identity(event_stream) -> updated persona_vector
+
+## Implementation notes
+- Keep everything deterministic where appropriate.
+- Use lightweight linear algebra (numpy) in identity module.
+
+# Obscure Calculus
+
+Mathematical primitives and symbolic transforms for the identity module.
+
+- Identity transforms expressed as matrix operations.
+- Include wrappers for symbolic entries that reference codex IDs.
+
+(Include concrete functions in `backend/pipelines/glyph_identity_bridge.py`)
+
+# Identity Lifecycle
+
+- onboarding -> stabilization -> recursion -> metamorphosis
+- Persist events as canonical timeline entries: `identity/events/<user_id>.log`
+
+# Narrative Module Structure
+
+## Node model
+A narrative node:
+- id
+- title
+- triggers (codex refs / glyph refs)
+- outcomes (state changes / events)
+- mirror links (references to other nodes that mirror or invert this node)
+
+## Engine responsibilities
+- Accept events from frontend or pipelines
+- Map to nodes and schedule triggers
+- Emit events back to frontend (WebSocket) and to identity pipeline
+
+## Storage
+- nodes stored in `narrative/nodes/` as JSON
+
+# Narrative Engine
+
+Design patterns:
+- Event-driven
+- Stateless handler + persisted node graph
+- WebSocket interface for live client updates
+
+API:
+- POST /narrative/trigger
+- GET /narrative/node/{id}
+
+# Mythic Paths
+
+Define canonical user journeys: e.g., The Initiate, The Anchor, The Mirror. Each path is a curated sequence of nodes.
+
+{
+  "name": "mirrornode-web",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "vite": "^5.0.0",
+    "axios": "^1.4.0",
+    "jwt-decode": "^3.1.2"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  }
+}
+
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './App'
+
+createRoot(document.getElementById('root')).render(<App />)
+
+import React from 'react'
+import HUD from './hud/HUD'
+
+export default function App(){
+  return (
+    <div>
+      <h1>MIRRORNODE HUD</h1>
+      <HUD/>
+    </div>
+  )
+}
+
+import React from 'react'
+
+export default function HUD(){
+  return (
+    <div>
+      <section>
+        <h2>Console</h2>
+        <p>HUD placeholder — connects to backend for glyphs & narrative</p>
+      </section>
+    </div>
+  )
+}
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>MIRRORNODE</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from backend.api.routes import glyphs, narrative, identity, auth
+
+app = FastAPI(title="MIRRORNODE API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router, prefix="/auth")
+app.include_router(glyphs.router, prefix="/glyph")
+app.include_router(narrative.router, prefix="/narrative")
+app.include_router(identity.router, prefix="/identity")
+
+@app.get("/")
+def root():
+    return {"service":"mirrornode", "status":"ok"}
+
+# package marker
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from backend.api.models import GlyphPayload
+from backend.pipelines.glyph_identity_bridge import generate_glyph
+
+router = APIRouter()
+
+class GenerateRequest(BaseModel):
+    codex_refs: list
+    params: dict = {}
+
+@router.post("/generate")
+def generate(request: GenerateRequest):
+    glyph = generate_glyph(request.codex_refs, request.params)
+    return glyph
+
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+router = APIRouter()
+
+class TriggerRequest(BaseModel):
+    node_id: str
+    context: dict = {}
+
+@router.post("/trigger")
+def trigger_node(req: TriggerRequest):
+    # TODO: hook into narrative engine
+    return {"status":"triggered", "node": req.node_id}
+
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+router = APIRouter()
+
+class Persona(BaseModel):
+    user_id: str
+    vector: list
+
+@router.post("/harmonics")
+def harmonics(p: Persona):
+    # TODO: compute harmonics
+    return {"user_id": p.user_id, "harmonics": [0.0]}
+
+from pydantic import BaseModel
+from typing import List, Dict
+
+class GlyphPayload(BaseModel):
+    id: str
+    codex_refs: List[str]
+    dual_expression: Dict[str, str]
+    frequency: List[float]
+    vector: Dict[str, str]
+    metadata: Dict[str, str]
+
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+router = APIRouter()
+
+class Persona(BaseModel):
+    user_id: str
+    vector: list
+
+@router.post("/harmonics")
+def harmonics(p: Persona):
+    # TODO: compute harmonics
+    return {"user_id": p.user_id, "harmonics": [0.0]}
+
+from pydantic import BaseModel
+from typing import List, Dict
+
+class GlyphPayload(BaseModel):
+    id: str
+    codex_refs: List[str]
+    dual_expression: Dict[str, str]
+    frequency: List[float]
+    vector: Dict[str, str]
+    metadata: Dict[str, str]
+
+import jwt
+from datetime import datetime, timedelta
+
+SECRET = "dev-secret"
+ALGORITHM = "HS256"
+
+def create_token(sub: str, expires_minutes: int = 60):
+    to_encode = {"sub": sub, "exp": datetime.utcnow() + timedelta(minutes=expires_minutes)}
+    return jwt.encode(to_encode, SECRET, algorithm=ALGORITHM)
+
+def decode_token(token: str):
+    return jwt.decode(token, SECRET, algorithms=[ALGORITHM])
+
+# Placeholder for OAuth2 flows; use FastAPI's OAuth2PasswordBearer in production.
+
+from backend.api.models import GlyphPayload
+from glyph_engine import engine_stub
+from identity_engine import identity_stub
+
+# Lightweight bridge demonstration. Replace stubs with real modules.
+
+def generate_glyph(codex_refs, params):
+    # deterministically produce a glyph using codex_refs + params
+    glyph = engine_stub.generate(codex_refs, params)
+    # compute identity matches (optional)
+    return glyph
+
+# package
+
+# Simple stub for glyph generation used by backend during early development.
+
+import uuid
+from datetime import datetime
+
+def generate(codex_refs, params):
+    return {
+        "id": str(uuid.uuid4()),
+        "codex_refs": codex_refs,
+        "dual_expression": {"runeA":"α", "runeB":"β"},
+        "frequency": [440.0,880.0],
+        "vector": {"type":"svg", "path":"M10 10L90 90"},
+        "metadata": {"created_at": datetime.utcnow().isoformat()+"Z"}
+    }
+
+# Stub for identity computations
+
+def compute_harmonics(vector):
+    # naive: normalize and return fractional spectrum
+    length = len(vector) or 1
+    return [float(v)/sum(vector) if sum(vector)>0 else 0.0 for v in vector]
+
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY . /app
+
+RUN pip install --no-cache-dir fastapi uvicorn
+
+EXPOSE 8000
+CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+version: "3.8"
+services:
+  api:
+    build: ../../
+    container_name: mirrornode_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../../:/app
+
+# Minimal CI example (GitHub Actions)
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install fastapi uvicorn
+      - name: Lint
+        run: echo "Add linters"
+      - name: Run tests
+        run: echo "Add tests"
+
+# Revenue System (practical, immediate)
+
+Phased monetization:
+1. Launch digital product MVP:
+   - "Glyph pack" — curated glyphs + usage license ($7-$25)
+   - "Ritual payloads" — narrative templates ($15)
+2. Patreon / Ko-fi tiers:
+   - Supporter: early access + monthly glyph
+   - Practitioner: weekly ritual kits + community
+3. Consulting / Workshops:
+   - Offer technical + mythos integration packages
+4. SaaS features:
+   - API access tier for glyph generation
+   - Custom identity harmonics tuning
+
+Immediate actions:
+- Create a landing page with email capture
+- Build one paid glyph pack product
+- Open a Patreon with two tier
+
+# Product Tree
+
+- Free: demo glyph generator, sample codex excerpt
+- Paid: glyph packs, narrative kits
+- Pro: API access, custom identity tuning
+- Enterprise: bespoke mythic integration
+
+# Launch Strategies
+
+- Soft launch to existing network and private list
+- Release 1: "Anchor Pack" glyphs + HUD demo
+- Gather feedback, iterate, then open API access
+
+# Contribution Guidelines
+
+- Branch from `develop`
+- Commit messages: `scope: short description`
+- Include tests for new logic
+- Maintain codex references when adding new symbols
+
+# Integration Notes
+
+- Codex IDs must be stable (no renames without migration)
+- All glyphs reference codex IDs
+- Use deterministic generation for reproducibility
+
+# Glossary
+
+- Codex: canonical mythos dictionary
+- Glyph: generated artifact (visual + semantic)
+- Harmonics: identity spectral mapping
+- Rotan: the stage sequence central to MIRRORNODE
+
+#!/usr/bin/env bash
+set -e
+echo "Initializing MIRRORNODE monorepo (dev)"
+# create virtualenv (optional)
+python -m venv .venv
+echo "Dev env created. See README for run instructions."
+
+
