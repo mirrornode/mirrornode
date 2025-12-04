@@ -1,1 +1,22 @@
-{\n  "name": "mirrornode-monorepo",\n  "private": true,\n  "version": "0.1.0",\n  "description": "Canonical MIRRORNODE monorepo (cores, agents, starter-kits).",\n  "workspaces": [\n    "cores/*",\n    "agents/*",\n    "starter-kits/*"\n  ],\n  "scripts": {\n    "build": "npm run build --workspaces",\n    "test": "npm run test --workspaces",\n    "build:cores": "npm run build --workspace @mirrornode/mirrornode-core && npm run build --workspace @mirrornode/theia-core",\n    "test:cores": "npm run test --workspace @mirrornode/mirrornode-core && npm run test --workspace @mirrornode/theia-core"\n  },\n  "license": "MIT"\n}
+{
+  "name": "mirrornode-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Canonical MIRRORNODE monorepo (cores, agents, starter-kits).",
+  "workspaces": [
+    "cores/*",
+    "agents/*",
+    "starter-kits/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "build:cores": "npm run build --workspace @mirrornode/mirrornode-core && npm run build --workspace @mirrornode/theia-core",
+    "test:cores": "npm run test --workspace @mirrornode/mirrornode-core && npm run test --workspace @mirrornode/theia-core",
+    "smoke:theia": "npx ts-node cores/theia-core/src/__tests__/gateway.test.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  },
+  "license": "MIT"
+}
