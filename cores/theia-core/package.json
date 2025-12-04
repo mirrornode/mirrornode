@@ -1,0 +1,22 @@
+{
+  "name": "@mirrornode/theia-core",
+  "version": "0.1.0",
+  "description": "Theia-core gateway/orchestrator for MIRRORNODE.",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "echo \"No tests defined yet for theia-core\" && exit 0"
+  },
+  "keywords": [
+    "mirrornode",
+    "theia",
+    "gateway",
+    "orchestrator"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
