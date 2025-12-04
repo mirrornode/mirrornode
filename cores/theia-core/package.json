@@ -15,7 +15,9 @@
     "gateway",
     "orchestrator"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "@mirrornode/mirrornode-core": "0.1.0"
+  },
   "devDependencies": {
     "typescript": "^5.6.0"
   }

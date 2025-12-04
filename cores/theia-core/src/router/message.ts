@@ -1,4 +1,8 @@
 import type { MirrorNodeEvent, TheiaResponse } from "../schemas/Event";
+import {
+  processEvent,
+  type CoreProcessingResult
+} from "@mirrornode/mirrornode-core";
 
 /**
  * Theia routing context.
@@ -22,11 +26,10 @@ export interface TheiaContext {
 
 /**
  * Basic router entry point for a single event.
- * For now, it simply echoes the event back and annotates that Theia handled it.
- * Later, this is where we will:
- * - Call mirrornode-core
- * - Branch by event.type and tags
- * - Proxy to external LLMs
+ * Currently:
+ * - Annotates the event with environment/source info
+ * - Forwards it to mirrornode-core's processEvent
+ * - Returns the CoreProcessingResult in the response
  */
 export async function routeEvent(
   event: MirrorNodeEvent,
@@ -36,31 +39,46 @@ export async function routeEvent(
 
   logger?.debug("Theia received event", { event });
 
-  // TODO: Replace this with real routing into mirrornode-core.
   const enrichedEvent: MirrorNodeEvent = {
     ...event,
     meta: {
       ...event.meta,
       environment,
-      // preserve existing source, but annotate that Theia touched it
       source: event.meta.source
         ? `${event.meta.source}|theia-core`
         : "theia-core"
     }
   };
 
-  logger?.info("Theia handled event", {
-    id: enrichedEvent.meta.id,
-    type: enrichedEvent.type
-  });
+  let coreResult: CoreProcessingResult;
+
+  try {
+    coreResult = await processEvent(enrichedEvent as any);
+    logger?.info("Theia routed event to mirrornode-core", {
+      id: enrichedEvent.meta.id,
+      type: enrichedEvent.type
+    });
+  } catch (error) {
+    logger?.error("Error while processing event in mirrornode-core", { error });
+
+    return {
+      ok: false,
+      status: "CORE_ERROR",
+      message: "Theia failed to process event via mirrornode-core.",
+      event: enrichedEvent
+    };
+  }
+
+  logger?.debug("mirrornode-core result", { coreResult });
 
   return {
     ok: true,
     status: "ROUTED",
-    message: "Event routed by theia-core (stub implementation).",
+    message: "Event processed by mirrornode-core via theia-core.",
     event: enrichedEvent,
     result: {
-      echo: true
+      source: "mirrornode-core",
+      coreResult
     }
   };
 }
