@@ -1,0 +1,4 @@
+*
+!services/oracle
+!services/oracle/**
+!vercel.json
