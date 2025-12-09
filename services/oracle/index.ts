@@ -6,7 +6,7 @@ app.use(express.json({ limit: "2mb" }));
 
 const OraclePayloadSchema = z.object({
   instruction: z.string().min(1, "instruction is required"),
-  data: z.record(z.any()).optional(),
+   z.record(z.any()).optional(),
   requestId: z.string().optional()
 });
 
@@ -52,17 +52,17 @@ app.all("/feedback", (req, res) => {
       method: req.method,
       timestamp: Date.now()
     },
-    data: req.body ?? null
+     req.body ?? null
   });
 });
 
 async function handleOracleInstruction(input: OraclePayload) {
   const { instruction, data } = input;
-  
+
   switch (instruction) {
     case "PING":
       return { message: "PONG", ts: Date.now() };
-    
+
     case "THOTH_ROUTE":
       if (!data || typeof data.path !== "string") {
         throw new Error("Missing Thoth route path");
@@ -72,9 +72,9 @@ async function handleOracleInstruction(input: OraclePayload) {
         path: data.path,
         depth: typeof data.depth === "number" ? data.depth : 1
       };
-    
+
     default:
-      throw new Error(`Unknown instruction: ${instruction}`);
+      throw new Error(\`Unknown instruction: \${instruction}\`);
   }
 }
 
