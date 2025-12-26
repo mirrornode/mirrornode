@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OSIRIS HUD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="hud">
+    <header id="status-bar">
+      <span>OSIRIS</span>
+      <span id="target">No target loaded</span>
+      <span id="timestamp">—</span>
+    </header>
+
+    <main id="main">
+      <aside id="left">
+        <h3>Audit</h3>
+        <button id="load-json">Load JSON</button>
+        <input type="file" id="file-input" hidden />
+      </aside>
+
+      <section id="center"></section>
+
+      <aside id="right">
+        <h3>Results</h3>
+        <div id="results"></div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="hud.js"></script>
+</body>
+</html>
