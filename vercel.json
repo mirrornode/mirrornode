@@ -1,25 +1,19 @@
 {
   "version": 2,
-  "name": "mirrornode-oracle",
   "builds": [
     {
-      "src": "services/oracle/dist/index.js",
-      "use": "@vercel/node"
+      "src": "services/oracle/package.json",
+      "use": "@vercel/node",
+      "config": {
+        "buildCommand": "npm run build"
+      }
     }
   ],
   "routes": [
-    {
-      "src": "/health",
-      "dest": "services/oracle/dist/index.js"
-    },
-    {
-      "src": "/oracle",
-      "dest": "services/oracle/dist/index.js",
-      "methods": ["POST"]
-    },
-    {
-      "src": "/feedback",
-      "dest": "services/oracle/dist/index.js"
-    }
+    { "src": "/health", "dest": "services/oracle/dist/index.js" },
+    { "src": "/oracle", "dest": "services/oracle/dist/index.js", 
+"methods": ["POST"] },
+    { "src": "/feedback", "dest": "services/oracle/dist/index.js" }
   ]
 }
+
