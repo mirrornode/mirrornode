@@ -1,0 +1,38 @@
+{
+  "audit": {
+    "id": "806ee9ed-e49c-4adb-a046-dc0158caa26e",
+    "timestamp": "2025-12-26T01:29:46.390954Z",
+    "tool_version": "0.1.0",
+    "target": {
+      "path": "/Users/morningstar/mirrornode/mirrornode-osiris/audit-tool",
+      "type": "filesystem"
+    }
+  },
+  "summary": {
+    "status": "pass",
+    "score": 1.0,
+    "finding_counts": {
+      "info": 0,
+      "warn": 0,
+      "fail": 0
+    }
+  },
+  "structure": {
+    "files_scanned": 12,
+    "directories_scanned": 3,
+    "missing_expected": [
+      "README"
+    ],
+    "unexpected_present": []
+  },
+  "documentation": {
+    "readme_present": true,
+    "readme_quality": "adequate",
+    "missing_docs": []
+  },
+  "invariants": {
+    "defined": [],
+    "violations": []
+  },
+  "findings": []
+}

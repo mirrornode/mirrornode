@@ -1,0 +1,21 @@
+{
+  "directive": "PRIME_CORE_DEPLOYMENT",
+  "authority": "IMPERATUR_RESPLENDENCE",
+  "version": "1.0.0",
+  "trace_id": "prime-deploy-2025-12-10-001",
+  "timestamp": "2025-12-10T00:00:00Z",
+  "sync_targets": ["theia", "arachiel", "mirrornode_prime", "harpa", "slack", "linear"],
+  "elevation": "sovereign",
+  "status": "ACTIVE",
+  "payload": {
+    "deployment_sequence": [
+      {"step": 1, "action": "VALIDATE_SYSTEM_STATE", "timeout_ms": 5000},
+      {"step": 2, "action": "SYNC_CONTROL_CONFIG", "timeout_ms": 10000},
+      {"step": 3, "action": "DEPLOY_HALVORSEN_UI", "target": "vercel", "timeout_ms": 120000},
+      {"step": 4, "action": "ACTIVATE_EVENT_PIPELINE", "timeout_ms": 5000},
+      {"step": 5, "action": "VERIFY_INTEGRATION", "timeout_ms": 30000}
+    ],
+    "rollback_on_failure": true,
+    "notification_channels": ["#mirrornode-ops", "#mirrornode-alerts"]
+  }
+}
