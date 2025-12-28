@@ -4,14 +4,20 @@ import { z } from "zod";
 const app = express();
 app.use(express.json({ limit: "2mb" }));
 
+/**
+ * Payload schema
+ */
 const OraclePayloadSchema = z.object({
   instruction: z.string().min(1, "instruction is required"),
-   z.record(z.any()).optional(),
+  data: z.record(z.any()).optional(),
   requestId: z.string().optional()
 });
 
 type OraclePayload = z.infer<typeof OraclePayloadSchema>;
 
+/**
+ * Health check
+ */
 app.get("/health", (_req, res) => {
   res.status(200).json({
     status: "ok",
@@ -20,10 +26,14 @@ app.get("/health", (_req, res) => {
   });
 });
 
+/**
+ * Main oracle endpoint
+ */
 app.post("/oracle", async (req, res) => {
   try {
     const payload = OraclePayloadSchema.parse(req.body);
     const result = await handleOracleInstruction(payload);
+
     res.json({
       ok: true,
       requestId: payload.requestId ?? null,
@@ -31,20 +41,25 @@ app.post("/oracle", async (req, res) => {
     });
   } catch (err: any) {
     console.error("Oracle error:", err);
-    if (err.name === "ZodError") {
+
+    if (err?.name === "ZodError") {
       return res.status(400).json({
         ok: false,
         error: "Invalid payload",
         details: err.errors
       });
     }
+
     res.status(500).json({
       ok: false,
-      error: err.message ?? "Internal error"
+      error: err?.message ?? "Internal error"
     });
   }
 });
 
+/**
+ * Feedback / echo endpoint
+ */
 app.all("/feedback", (req, res) => {
   res.json({
     ok: true,
@@ -52,10 +67,13 @@ app.all("/feedback", (req, res) => {
       method: req.method,
       timestamp: Date.now()
     },
-     req.body ?? null
+    body: req.body ?? null
   });
 });
 
+/**
+ * Oracle logic
+ */
 async function handleOracleInstruction(input: OraclePayload) {
   const { instruction, data } = input;
 
@@ -74,16 +92,14 @@ async function handleOracleInstruction(input: OraclePayload) {
       };
 
     default:
-      throw new Error(\`Unknown instruction: \${instruction}\`);
+      throw new Error(`Unknown instruction: ${instruction}`);
   }
 }
 
-const PORT = process.env.PORT || 7007;
-
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log("🜂 Oracle online at:", PORT);
-  });
-}
-
+/**
+ * IMPORTANT:
+ * Do NOT call app.listen on Vercel.
+ * Export the app as the handler.
+ */
 export default app;
+
