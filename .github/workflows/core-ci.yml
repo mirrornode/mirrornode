@@ -16,19 +16,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+
+    - name: Install pnpm
+          uses: pnpm/action-setup@v3
+                with:
+                        version: 8
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
 
       - name: Build core packages
-        run: npm run build:cores
+        run: pnpm run build:cores
 
       - name: Run Theia smoke test
-        run: npm run smoke:theia
+        run: pnpm run smoke:theia
 
 
