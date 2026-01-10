@@ -1,16 +1,7 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "dist/index.js",
-      "use": "@vercel/node"
-    }
-  ],
+  "builds": [{ "src": "dist/index.js", "use": "@vercel/node" }],
   "routes": [
-    { "src": "/health", "dest": "dist/index.js" },
-    { "src": "/oracle", "dest": "dist/index.js", "methods": ["POST"] },
-    { "src": "/feedback", "dest": "dist/index.js" }
+    { "src": "/(.*)", "dest": "dist/index.js" }
   ]
 }
-
-

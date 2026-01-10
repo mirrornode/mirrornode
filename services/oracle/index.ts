@@ -5,18 +5,16 @@ const app = express();
 app.use(express.json({ limit: "2mb" }));
 
 /**
- * Payload schema
+ * Schema
  */
 const OraclePayloadSchema = z.object({
-  instruction: z.string().min(1, "instruction is required"),
+  instruction: z.string(),
   data: z.record(z.any()).optional(),
   requestId: z.string().optional()
 });
 
-type OraclePayload = z.infer<typeof OraclePayloadSchema>;
-
 /**
- * Health check
+ * Health Check
  */
 app.get("/health", (_req, res) => {
   res.status(200).json({
@@ -27,7 +25,7 @@ app.get("/health", (_req, res) => {
 });
 
 /**
- * Main oracle endpoint
+ * Oracle Endpoint
  */
 app.post("/oracle", async (req, res) => {
   try {
@@ -58,7 +56,7 @@ app.post("/oracle", async (req, res) => {
 });
 
 /**
- * Feedback / echo endpoint
+ * Feedback Sink (non-critical)
  */
 app.all("/feedback", (req, res) => {
   res.json({
@@ -67,14 +65,16 @@ app.all("/feedback", (req, res) => {
       method: req.method,
       timestamp: Date.now()
     },
-    body: req.body ?? null
+    data: req.body ?? null
   });
 });
 
 /**
- * Oracle logic
+ * Core Logic
  */
-async function handleOracleInstruction(input: OraclePayload) {
+async function handleOracleInstruction(
+  input: z.infer<typeof OraclePayloadSchema>
+) {
   const { instruction, data } = input;
 
   switch (instruction) {
@@ -82,13 +82,13 @@ async function handleOracleInstruction(input: OraclePayload) {
       return { message: "PONG", ts: Date.now() };
 
     case "THOTH_ROUTE":
-      if (!data || typeof data.path !== "string") {
+      if (!data?.path) {
         throw new Error("Missing Thoth route path");
       }
       return {
         routed: true,
         path: data.path,
-        depth: typeof data.depth === "number" ? data.depth : 1
+        depth: data.depth ?? 1
       };
 
     default:
@@ -97,9 +97,13 @@ async function handleOracleInstruction(input: OraclePayload) {
 }
 
 /**
- * IMPORTANT:
- * Do NOT call app.listen on Vercel.
- * Export the app as the handler.
+ * Boot
  */
+const PORT = process.env.PORT || 7005;
+
+app.listen(PORT, () => {
+  console.log("🜂 Oracle online at:", PORT);
+});
+
 export default app;
 
