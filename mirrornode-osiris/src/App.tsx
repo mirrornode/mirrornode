@@ -1,34 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
+import { oraclePing, oracleThothRoute } from './lib/oracle'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [status, setStatus] = useState('Connecting...')
+  const [lastError, setLastError] = useState('')
+  const [results, setResults] = useState(null)
+
+  const testConnection = async () => {
+    try {
+      setStatus('Testing...')
+      const ping = await oraclePing()
+      setStatus(`Connected: ${ping.status}`)
+      setLastError('')
+    } catch (error: any) {
+      setStatus('Failed')
+      setLastError(error.message || 'Connection failed')
+    }
+  }
+
+  const runAudit = async () => {
+    try {
+      setStatus('Running audit...')
+      const audit = await oracleThothRoute('/thoth', 1)
+      setResults(audit)
+      setStatus('Audit complete')
+    } catch (error: any) {
+      setStatus('Audit failed')
+      setLastError(error.message || 'Audit failed')
+    }
+  }
+
+  useEffect(() => {
+    testConnection()
+  }, [])
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="App">
+      <h1>Osiris Audit HUD</h1>
+      <div className="status">
+        <h2>Status: {status}</h2>
+        {lastError && <p className="error">Error: {lastError}</p>}
+        <button onClick={testConnection}>Test Connection</button>
+        <button onClick={runAudit}>Run Audit</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      {results && (
+        <div className="results">
+          <h3>Audit Results:</h3>
+          <pre>{JSON.stringify(results, null, 2)}</pre>
+        </div>
+      )}
+    </div>
   )
 }
 

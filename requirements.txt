@@ -1,0 +1,18 @@
+# MIRRORNODE Bridge Dependencies
+# Authority: THOTH Security Commander
+# Date: 2025-01-09
+
+# Core Framework
+fastapi==0.123.10
+uvicorn[standard]==0.38.0
+pydantic==2.12.5
+
+# Security & Rate Limiting
+slowapi==0.1.9
+python-dotenv==1.2.1
+
+# WebSocket Support
+websockets==15.0.1
+
+# Existing Dependencies (from project)
+# Add any other dependencies from your current setup here
