@@ -1,0 +1,15 @@
+[submodule "library"]
+	path = library
+	url = ./library
+[submodule "mirrornode-modules"]
+	path = mirrornode-modules
+	url = ./mirrornode-modules
+[submodule "mirrornode-runtime"]
+	path = mirrornode-runtime
+	url = ./mirrornode-runtime
+[submodule "mirrornode-hub"]
+	path = mirrornode-hub
+	url = ./mirrornode-hub
+[submodule "mirrornode-prime"]
+	path = mirrornode-prime
+	url = ./mirrornode-prime
