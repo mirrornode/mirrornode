@@ -1,5 +1,5 @@
 import { createTheiaGateway } from "../index";
-import assert from "assert";
+import * as assert from "assert";
 
 /**
  * Tiny smoke test to verify theia-core → mirrornode-core wiring.

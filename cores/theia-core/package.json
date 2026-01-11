@@ -16,9 +16,10 @@
     "orchestrator"
   ],
   "dependencies": {
-    "@mirrornode/mirrornode-core": "0.1.0"
+    "@mirrornode/mirrornode-core": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^25.0.6",
     "typescript": "^5.6.0"
   }
 }
