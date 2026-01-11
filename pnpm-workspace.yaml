@@ -1,1 +1,2 @@
-packages:\n  - "cores/*"\n  - "agents/*"\n  - "starter-kits/*"
+packages:
+  - "cores/*"
