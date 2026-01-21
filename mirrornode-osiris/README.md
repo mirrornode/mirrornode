@@ -1,73 +1,65 @@
-# React + TypeScript + Vite
+# Osiris Audit v1.0.0
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Advisory-only security audit tool for offline analysis**
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## What This Is
 
-## React Compiler
+Osiris Audit is a standalone web application for conducting security audits on text-based artifacts. It provides:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Offline analysis capabilities
+- Visual heads-up display (HUD) interface
+- Advisory-level security insights
+- No data transmission or storage
 
-## Expanding the ESLint configuration
+## What This Is Not
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Not a vulnerability scanner** — Osiris does not perform automated security testing
+- **Not a compliance framework** — This tool does not certify or guarantee compliance
+- **Not a SaaS product** — No accounts, no cloud services, no data collection
+- **Not a penetration testing tool** — Osiris provides advisory information only
+- **Not a legal instrument** — Results do not constitute legal or professional advice
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Delivery
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Osiris Audit v1 is delivered as:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **One-time purchase** via Stripe Payment Link
+- **Secure, time-limited download** — No persistent account or entitlement tracking
+- **Self-contained application** — Runs entirely in your browser
+
+For delivery details, see: [`docs/DELIVERY.md`](docs/DELIVERY.md)
+
+## Integrity
+
+Verify your download using the official checksum:
+
+**SHA-256:**
+```
+eaf6f678a42765d44e80e1f7200f0045f10e17e1198f799c294a853d328f7bcf
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Full integrity documentation: [`docs/CHECKSUMS.md`](docs/CHECKSUMS.md)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Security Scope
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Osiris Audit operates within clearly defined boundaries:
+
+- Advisory-only software
+- Offline analysis
+- No guarantees or warranties
+- No live services or persistent data
+
+For complete security disclosure, see: [`docs/SECURITY.md`](docs/SECURITY.md)
+
+## License
+
+MIT License — See [`LICENSE`](../../LICENSE) for details.
+
+---
+
+**Version:** 1.0.0  
+**Release Date:** January 2026  
+**Repository:** mirrornode/mirrornode  
+**Product Path:** `mirrornode-osiris/`
