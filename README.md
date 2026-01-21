@@ -1,3 +1,9 @@
+
+
+## Shipped Products
+
+- **Osiris Audit v1** — Advisory, offline security audit tool  
+  See: `mirrornode-osiris/`
 # MIRRORNODE Monorepo
 
 The canonical monorepo for the MIRRORNODE system.
