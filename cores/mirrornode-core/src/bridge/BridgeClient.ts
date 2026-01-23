@@ -1,8 +1,9 @@
+// cores/mirrornode-core/src/bridge/BridgeClient.ts
+
 /**
  * TypeScript client for MIRRORNODE FastAPI Bridge
  * Maps canonical MirrorNodeEvent types to Python bridge format
  */
-
 export interface BridgeEvent {
   id?: string;
   ts?: string;
@@ -33,7 +34,9 @@ export class BridgeClient {
 
   async health(): Promise<BridgeHealthResponse> {
     const res = await fetch(`${this.baseUrl}/health`);
-    if (!res.ok) throw new Error(`Bridge health check failed: ${res.statusText}`);
+    if (!res.ok) {
+      throw new Error(`Bridge health check failed: ${res.statusText}`);
+    }
     return res.json();
   }
 
@@ -43,13 +46,17 @@ export class BridgeClient {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(event),
     });
-    if (!res.ok) throw new Error(`Failed to post event: ${res.statusText}`);
+    if (!res.ok) {
+      throw new Error(`Failed to post event: ${res.statusText}`);
+    }
     return res.json();
   }
 
   async getRecent(limit: number = 20): Promise<BridgeResponse> {
     const res = await fetch(`${this.baseUrl}/events/recent?limit=${limit}`);
-    if (!res.ok) throw new Error(`Failed to get recent events: ${res.statusText}`);
+    if (!res.ok) {
+      throw new Error(`Failed to get recent events: ${res.statusText}`);
+    }
     return res.json();
   }
 }
