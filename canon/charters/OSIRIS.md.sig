@@ -1,0 +1,4 @@
+Charter: OSIRIS.md
+Hash: sha256:2af3aae0cf96a28b349bbd68242cf8a1f4026e5d8aa87e46b8780559852124b0
+Signed: 2026-01-27T20:59:14Z
+Authority: MIRRORNODE Canon v1.0.0
