@@ -1,71 +1,76 @@
-# MIRRORNODE CANON — OPERATOR CONTROL SURFACE
-# v1.0.0
+.PHONY: all
+all: help
 
-SHELL := /bin/bash
-.SHELLFLAGS := -euo pipefail -c
-MAKEFLAGS += --warn-undefined-variables
-.PHONY: help bootstrap charter audit index halt freeze clean status
-
-CANON_ROOT := $(shell pwd)
-LOGS := $(CANON_ROOT)/logs
-DOSS := $(CANON_ROOT)/canon/dossiers
-
+.PHONY: help
 help:
-	@echo "MIRRORNODE CANON — Available Commands"
-	@echo "  make bootstrap   — Establish canon directories + README"
-	@echo "  make charter     — Lock Lucian Prime charter"
-	@echo "  make audit REPO= — Audit a GitHub repo"
-	@echo "  make index ORG=  — Index GitHub org repos"
-	@echo "  make halt        — Mandatory execution pause"
-	@echo "  make freeze      — Tag canon v1.0.0"
-	@echo "  make clean       — Safe cleanup (logs only)"
-	@echo "  make status      — Current canon state"
+	@echo "════════════════════════════════════════"
+	@echo " MIRRORNODE Canon - Command Reference"
+	@echo "════════════════════════════════════════"
+	@echo ""
+	@echo "📋 Documentation:"
+	@echo "  help              Show this message"
+	@echo "  docs              Open documentation"
+	@echo "  verify            Check system integrity"
+	@echo ""
+	@echo "🔍 Audit Operations:"
+	@echo "  audit-check       Check compliance (warnings)"
+	@echo "  audit-strict      Check compliance (strict)"
+	@echo "  audit-test        Test audit SDK"
+	@echo "  audit-month       Show audits this month"
+	@echo ""
+	@echo "📜 Charter Operations:"
+	@echo "  charters          List active charters"
+	@echo "  charter-hashes    Show verification hashes"
+	@echo ""
+	@echo "🔧 System Operations:"
+	@echo "  bootstrap         Initialize canon"
+	@echo "  status            Show system status"
+	@echo ""
 
+.PHONY: docs
+docs:
+	@cat canon/INDEX.md
+
+.PHONY: verify
+verify:
+	@./canon/scripts/verify_integrity.sh
+
+.PHONY: audit-check
+audit-check:
+	@./canon/scripts/enforce_audits.sh
+
+.PHONY: audit-strict
+audit-strict:
+	@./canon/scripts/enforce_audits.sh --strict
+
+.PHONY: audit-test
+audit-test:
+	@python3 canon/contracts/sdk/audit.py
+
+.PHONY: audit-month
+audit-month:
+	@find canon/dossiers/$$(date +%Y-%m) -name "audit-*.json" -exec cat {} \; 2>/dev/null | jq -s '.'
+
+.PHONY: charters
+charters:
+	@echo "Active Charters:"
+	@ls -1 canon/charters/*.md 2>/dev/null | grep -v "\.sig" | sed 's/canon\/charters\//  ✓ /' | sed 's/\.md//'
+
+.PHONY: charter-hashes
+charter-hashes:
+	@find canon/charters -name "*.md" -not -name "*.sig" | while read f; do \
+		printf "  %s: %s\n" "$$(basename $$f .md)" "$$(shasum -a 256 $$f | cut -d' ' -f1)"; \
+	done
+
+.PHONY: bootstrap
 bootstrap:
 	@./canon/scripts/bootstrap.sh
 
-charter:
-	@./canon/scripts/charter_lucian.sh
-
-audit:
-ifndef REPO
-	$(error REPO required: make audit REPO=https://github.com/mirrornode/mirrornode)
-endif
-	@mkdir -p "$(DOSS)"
-	@./canon/scripts/audit.sh "$(REPO)"
-
-index:
-ifndef ORG
-	$(error ORG required: make index ORG=mirrornode)
-endif
-	@mkdir -p "$(CANON_ROOT)/canon/index"
-	@./canon/scripts/index.sh "$(ORG)"
-
-halt:
-	@./canon/scripts/halt.sh
-
-freeze:
-	@echo "🔒 FREEZING CANON v1.0.0"
-	git add canon/ Makefile
-	git commit -m "Canon v1.0.0: constitutional freeze" || true
-	git tag -a v1.0.0-canon -m "Canon v1.0.0 governance freeze"
-	git push origin main --tags
-	echo "v1.0.0" > canon/version
-	git add canon/version
-	git commit -m "Lock canon version"
-	git push origin main
-	@echo "✓ Canon v1.0.0 tagged and frozen"
-
-clean:
-	@rm -rf logs/*
-	@echo "✓ Logs cleared"
-
+.PHONY: status
 status:
-	@echo "📊 CANON STATUS"
-	@echo "Root: $(CANON_ROOT)"
-	@echo "Version: $$(cat canon/version 2>/dev/null || echo "unfrozen")"
-	@echo "Scripts: $$(ls canon/scripts/*.sh 2>/dev/null | wc -l)/5"
-	@echo "Charters: $$(ls canon/charters/ 2>/dev/null | wc -l || echo 0)"
-	@echo "Dossiers: $$(ls canon/dossiers/ 2>/dev/null | wc -l || echo 0)"
-	@echo "Git: $$(git status --porcelain | wc -l) uncommitted changes"
-	@echo "Branch: $$(git rev-parse --abbrev-ref HEAD)"
+	@echo "MIRRORNODE Canon Status"
+	@echo "══════════════════════════════════════"
+	@echo "Git commit: $$(git rev-parse --short HEAD)"
+	@echo "Charters:   $$(find canon/charters -name '*.md' -not -name '*.sig' | wc -l | tr -d ' ')"
+	@echo "Audits:     $$(find canon/dossiers -name 'audit-*.json' 2>/dev/null | wc -l | tr -d ' ')"
+	@echo "Last check: $$(date)"

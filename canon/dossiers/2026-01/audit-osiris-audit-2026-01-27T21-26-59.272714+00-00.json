@@ -1,0 +1,1 @@
+{"timestamp": "2026-01-27T21:26:59.272714+00:00", "repo": "osiris-audit", "repo_hash": "84f8ae7bf96509c9a64dffafa2fea4e40a2d040c", "charter_hash": "UNCHARTERED", "event_type": "execution", "actor": "system", "verdict": "SUCCESS", "evidence": {"test": true, "duration_ms": 0, "error": null}, "audit_id": "b52131f7-b573-4873-ab3e-f246fe9a53be"}
