@@ -1,0 +1,72 @@
+name: Weekly Canon Audit
+
+on:
+  schedule:
+    # Every Monday at 03:33 UTC (Sunday 7:33 PM PST)
+    - cron: '33 3 * * 1'
+  workflow_dispatch: # Manual trigger option
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install requests PyGithub
+          
+      - name: Run system audit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd canon
+          make status > ../vault/weekly/status-$(date +%Y-%m-%d).txt
+          make index
+          
+      - name: Generate audit snapshot
+        run: |
+          mkdir -p vault/weekly
+          cat > vault/weekly/audit-$(date +%Y-%m-%d).md <<EOF
+          # Weekly Audit Snapshot
+          **Date**: $(date +%Y-%m-%d)
+          **Time**: $(date +%H:%M:%S) UTC
+          **Trigger**: Automated weekly run
+          
+          ## System Status
+          \`\`\`
+          $(cat vault/weekly/status-$(date +%Y-%m-%d).txt)
+          \`\`\`
+          
+          ## Repository Index
+          Total repos: $(jq 'length' repos.json)
+          
+          ## Changes Since Last Week
+          $(git log --oneline --since="7 days ago")
+          EOF
+          
+      - name: Commit audit results
+        run: |
+          git config user.name "MIRRORNODE Canon Bot"
+          git config user.email "canon@mirrornode.local"
+          git add vault/weekly/ repos.json index_metadata.json
+          git diff --staged --quiet || git commit -m "Weekly audit: $(date +%Y-%m-%d)"
+          git push
+
+      - name: Check for drift
+        run: |
+          # Calculate drift score based on uncommitted changes
+          CHANGES=$(git status --porcelain | wc -l)
+          if [ $CHANGES -gt 5 ]; then
+            echo "⚠️ HIGH DRIFT DETECTED: $CHANGES files changed"
+            echo "drift_alert=true" >> $GITHUB_ENV
+          fi
