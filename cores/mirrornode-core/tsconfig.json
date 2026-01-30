@@ -8,9 +8,9 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "declaration": true,
-    "rootDir": "src",,
+    "rootDir": "src",
         "jsx": "react-jsx",
-        "types": ["node"]
+        "types": ["node"],
     "outDir": "dist"
   },
   "include": ["src"]
