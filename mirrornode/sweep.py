@@ -1,4 +1,5 @@
 from __future__ import annotations
+from mirrornode.mirror import write_mirror
 import json, os, time, subprocess, sys
 from datetime import datetime
 from pathlib import Path
@@ -46,7 +47,7 @@ def run_sweep(args) -> int:
         from mirrornode.core.prompt_loader import load_prompt
         prompts = {"merlin": load_prompt("merlin")}
         ok = isinstance(prompts, dict) and len(prompts) > 0
-        _check(result, "canon_loader", ok, detail={"keys": list(prompts.keys()) if ok else []})
+        _check(result, "canon_loader", ok, detail={"keys": list(prompts.keys())})
     except Exception as e:
         _check(result, "canon_loader", False, error=str(e))
 
@@ -79,20 +80,8 @@ def run_sweep(args) -> int:
     result["duration_ms"] = int((time.time() - started) * 1000)
 
     # Write artifacts
-    sweep_path = run_dir / "sweep.json"
-    sweep_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
-
-    status_icon = "✅" if result["final_status"] == "pass" else "❌"
-    lines = [f"# Mirror\n", f"**Status:** {status_icon} {result['final_status'].upper()}\n",
-             f"**Run:** `{result['run_id']}`\n",
-             f"**Duration:** {result['duration_ms']}ms\n\n## Gates\n"]
-    for c in result["checks"]:
-        icon = "✅" if c["ok"] else "❌"
-        lines.append(f"- {icon} `{c['id']}`")
-        if not c["ok"] and "error" in c:
-            lines.append(f"  - error: {c['error']}")
-    lines.append(f"\n\n*Generated {result['started_at']}*\n")
-    (run_dir / "mirror.md").write_text("\n".join(lines), encoding="utf-8")
+    (run_dir / "sweep.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
+    write_mirror(result, run_dir)
 
     # Print summary to terminal
     print(f"\n{'='*48}")
