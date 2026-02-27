@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 """
 MirrorNode Credential Verifier v1.0
 Per-agent endpoint + credential health check.

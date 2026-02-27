@@ -1,0 +1,43 @@
+{
+  "run_id": "sweep_20260219_141948",
+  "started_at": "2026-02-19T14:19:48.270510Z",
+  "checks": [
+    {
+      "id": "bridge_health",
+      "ok": true,
+      "detail": {
+        "status": "operational",
+        "timestamp": "2026-02-19T14:19:48.387159",
+        "version": "1.0.0",
+        "security": "lockdown_active",
+        "adapters": [
+          "claude",
+          "theia",
+          "grok",
+          "gpt"
+        ]
+      }
+    },
+    {
+      "id": "canon_loader",
+      "ok": false,
+      "error": "No module named 'requests'"
+    },
+    {
+      "id": "credential_verify",
+      "ok": false,
+      "error": "cannot import name 'verify_credentials' from 'mirrornode.core.credential_verify' (/Users/morningstar/MIRRORNODE_ROOT/ACTIVE/mirrornode/mirrornode/core/credential_verify.py)"
+    },
+    {
+      "id": "tests",
+      "ok": false,
+      "detail": {
+        "returncode": 2,
+        "stdout": "===================\n__________________ ERROR collecting tests/test_merlin_flow.py __________________\nImportError while importing test module '/Users/morningstar/MIRRORNODE_ROOT/ACTIVE/mirrornode/tests/test_merlin_flow.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/local/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_merlin_flow.py:10: in <module>\n    from mirrornode.core.prompt_loader import load_prompt\nmirrornode/core/prompt_loader.py:1: in <module>\n    import requests\nE   ModuleNotFoundError: No module named 'requests'\n=========================== short test summary info ============================\nERROR tests/test_merlin_flow.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.28s\n",
+        "stderr": ""
+      }
+    }
+  ],
+  "final_status": "fail",
+  "duration_ms": 2757
+}

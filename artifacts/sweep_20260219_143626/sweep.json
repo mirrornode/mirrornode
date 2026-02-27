@@ -1,0 +1,49 @@
+{
+  "run_id": "sweep_20260219_143626",
+  "started_at": "2026-02-19T14:36:26.397269Z",
+  "checks": [
+    {
+      "id": "bridge_health",
+      "ok": true,
+      "detail": {
+        "status": "operational",
+        "timestamp": "2026-02-19T14:36:26.460433",
+        "version": "1.0.0",
+        "security": "lockdown_active",
+        "adapters": [
+          "claude",
+          "theia",
+          "grok",
+          "gpt"
+        ]
+      }
+    },
+    {
+      "id": "canon_loader",
+      "ok": true,
+      "detail": {
+        "keys": [
+          "merlin"
+        ]
+      }
+    },
+    {
+      "id": "credential_verify",
+      "ok": true,
+      "detail": {
+        "raw": "[CredentialStatus(agent='OpenAI Adapter', service='OpenAI', status='MISSING', error='OPENAI_API_KEY not set'), CredentialStatus(agent='Stripe Lane', service='Stripe', status='MISSING', error='STRIPE_SECRET_KEY not set')]"
+      }
+    },
+    {
+      "id": "tests",
+      "ok": true,
+      "detail": {
+        "returncode": 0,
+        "stdout": "....                                                                     [100%]\n=============================== warnings summary ===============================\ntests/test_merlin_flow.py::test_merlin_orchestration_stub\n  /Users/morningstar/MIRRORNODE_ROOT/ACTIVE/mirrornode/.venv/lib/python3.14/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but tests/test_merlin_flow.py::test_merlin_orchestration_stub returned <class 'bool'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n4 passed, 1 warning in 0.21s\n",
+        "stderr": ""
+      }
+    }
+  ],
+  "final_status": "pass",
+  "duration_ms": 2577
+}

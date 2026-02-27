@@ -182,7 +182,7 @@ async def post_event(request: Request, event: MirrorNodeEvent):
         raise HTTPException(status_code=400, detail=msg)
 
     event.ensure_metadata()
-    await router.route(event)
+    await router.dispatch(event)
     
     logger.info(f"Event routed: type={event.event_type}, node={event.node}")
 

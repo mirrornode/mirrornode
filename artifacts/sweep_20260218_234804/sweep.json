@@ -1,0 +1,24 @@
+{
+  "run_id": "sweep_20260218_234804",
+  "started_at": "2026-02-18T23:48:04.069108Z",
+  "checks": [
+    {
+      "id": "bridge_health",
+      "ok": true,
+      "detail": {
+        "status": "operational",
+        "timestamp": "2026-02-18T23:48:04.440334",
+        "version": "1.0.0",
+        "security": "lockdown_active",
+        "adapters": [
+          "claude",
+          "theia",
+          "grok",
+          "gpt"
+        ]
+      }
+    }
+  ],
+  "final_status": "pass",
+  "duration_ms": 383
+}
