@@ -2,8 +2,8 @@
 > Mission: Turn MIRRORNODE into a single, running machine.
 
 ## Checklist
-- [ ] Filesystem API implemented (FastAPI)
-- [ ] Test /logs/today endpoint
+- [x] Filesystem API implemented (FastAPI)
+- [x] Test /logs/today endpoint
 - [ ] Register nexus-prime in canon/agents/
 - [ ] Deploy osiris-pay to Vercel
 - [ ] Confirm Stripe webhook (test mode)

@@ -1,0 +1,13 @@
+{
+  "id": "nexus-prime",
+  "name": "Nexus Prime",
+  "type": "visual-agent-factory",
+  "status": "deploying",
+  "description": "AI-powered visual agent factory. Accepts text prompts, generates embeddable HTML/CSS/JS visual widgets, monetized via Stripe.",
+  "governed_by": "canon/charters/MIRRORNODE_CORE.md",
+  "registered": "2026-03-16",
+  "endpoints": {
+    "gateway": "https://nexus-prime.railway.app",
+    "payments": "https://nexus-prime.railway.app/api/payments/webhook"
+  }
+}
