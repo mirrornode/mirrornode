@@ -1,0 +1,28 @@
+name: Canon Deploy Logger
+
+on:
+  deployment_status:
+  push:
+    branches: [main]
+
+jobs:
+  log-to-canon:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log deploy event to MirrorNode Spine
+        run: |
+          curl -X POST https://mirrornode.vercel.app/events/log \
+            -H "Content-Type: application/json" \
+            -d '{
+              "source": "${{ github.repository }}",
+              "event_type": "deploy",
+              "payload": {
+                "commit": "${{ github.sha }}",
+                "message": "${{ github.event.head_commit.message }}",
+                "author": "${{ github.actor }}",
+                "branch": "${{ github.ref_name }}",
+                "repo": "${{ github.repository }}",
+                "timestamp": "${{ github.event.head_commit.timestamp }}",
+                "run_id": "${{ github.run_id }}"
+              }
+            }'
