@@ -1,5 +1,22 @@
+# Ignore everything by default
 *
-!services/
-!services/oracle
-!services/oracle/**
+
+# Un-ignore Vercel config
 !vercel.json
+!requirements.txt
+
+# Un-ignore API entry point
+!api/
+!api/index.py
+
+# Un-ignore spine service
+!services/
+!services/__init__.py
+!services/spine/
+!services/spine/__init__.py
+!services/spine/main.py
+!services/spine/events.py
+
+# Un-ignore oracle (existing)
+!services/oracle/
+!services/oracle/**
