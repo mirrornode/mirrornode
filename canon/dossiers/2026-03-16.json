@@ -6,7 +6,7 @@
   "milestones": [
     {"item": "spine API live", "status": "complete", "time": "21:08"},
     {"item": "nexus-prime registered in canon", "status": "complete", "time": "21:12"},
-    {"item": "osiris-pay deploy", "status": "pending"},
+    {"item": "osiris-pay deploy", "status": "complete", "time": "21:44", "url": "https://osiris-95w3i16j6-inphase.vercel.app"},
     {"item": "stripe webhook confirmed", "status": "pending"},
     {"item": "anchor hash", "status": "pending"}
   ],
