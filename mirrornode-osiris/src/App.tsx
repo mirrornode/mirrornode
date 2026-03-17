@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { oraclePing, oracleThothRoute } from './lib/oracle'
+import { oraclePing, oracleRoute } from './lib/oracle'
 import './App.css'
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
   const testConnection = async () => {
     try {
       setStatus('Testing...')
-      const ping = await oraclePing()
+      const ping = await oraclePing() as any
       setStatus(`Connected: ${ping.status}`)
       setLastError('')
     } catch (error: any) {
@@ -22,8 +22,8 @@ function App() {
   const runAudit = async () => {
     try {
       setStatus('Running audit...')
-      const audit = await oracleThothRoute('/thoth', 1)
-      setResults(audit)
+      const audit = await oracleRoute({ path: '/thoth' })
+      setResults(audit as any)
       setStatus('Audit complete')
     } catch (error: any) {
       setStatus('Audit failed')

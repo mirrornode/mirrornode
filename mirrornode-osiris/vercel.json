@@ -1,5 +1,13 @@
 {
-  "framework": "vite",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/pay.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "50mb" }
+    }
+  ],
+  "routes": [
+    { "src": "/api/pay", "dest": "/api/pay.py" }
+  ]
 }

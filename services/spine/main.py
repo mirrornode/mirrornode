@@ -2,8 +2,10 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from datetime import date
 from pathlib import Path
+from services.spine.events import router as events_router
 
 app = FastAPI(title="MirrorNode Spine API")
+app.include_router(events_router)
 
 BASE = Path(__file__).resolve().parents[2]
 
