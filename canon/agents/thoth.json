@@ -1,0 +1,13 @@
+{
+  "id": "thoth",
+  "name": "Thoth",
+  "version": "1.0.0",
+  "role": "security",
+  "status": "active",
+  "description": "Security commander. Credential verification, rate limiting, access control. THOTH-SYS authority over bridge dependencies.",
+  "governed_by": "canon/charters/MIRRORNODE_CORE.md",
+  "registered": "2026-03-18T08:45:55.805692+00:00",
+  "endpoints": {
+    "security": "https://mirrornode.vercel.app/invoke/thoth"
+  }
+}

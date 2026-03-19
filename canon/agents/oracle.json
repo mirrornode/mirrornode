@@ -1,0 +1,16 @@
+{
+  "id": "oracle",
+  "name": "Oracle",
+  "version": "1.0.0",
+  "role": "governance",
+  "status": "dormant",
+  "description": "Governance authority. Approves decisions, checks lattice integrity. Claude-backed. Ray actor: mirrornode_oracle_agent_0. Needs cluster restart to activate.",
+  "governed_by": "canon/charters/MIRRORNODE_CORE.md",
+  "registered": "2026-03-18T08:45:55.805692+00:00",
+  "last_confirmed": "2026-02-11",
+  "ray_actor": "mirrornode_oracle_agent_0",
+  "health": {
+    "status": "dormant",
+    "note": "ray cluster offline \u2014 restart required"
+  }
+}

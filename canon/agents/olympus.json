@@ -1,0 +1,23 @@
+{
+  "id": "olympus",
+  "name": "Olympus",
+  "version": "gpt-5.4",
+  "role": "protocol-kernel",
+  "status": "active",
+  "description": "Execution kernel. RunLedger, ProcessorPlan, ArtifactRef, hashing, ids. Canonical audit trail for every operation in the lattice.",
+  "governed_by": "canon/charters/MIRRORNODE_CORE.md",
+  "registered": "2026-03-18T08:45:55.805692+00:00",
+  "modules": [
+    "ids",
+    "hashing",
+    "models",
+    "ledger",
+    "registry",
+    "contracts",
+    "governance",
+    "kernel"
+  ],
+  "endpoints": {
+    "boot_event": "https://mirrornode.vercel.app/events/log"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "merlin",
+  "name": "Merlin",
+  "version": "1.0.0",
+  "role": "orchestrator",
+  "status": "active",
+  "description": "Cluster brain. MerlinDispatcher via Ray Serve + FastAPI. Routes REFRACT rituals, enforces SystemState transitions, dispatches AgentActors.",
+  "governed_by": "canon/charters/MIRRORNODE_CORE.md",
+  "registered": "2026-03-18T08:45:55.805692+00:00",
+  "endpoints": {
+    "dispatcher": "http://localhost:8000/ritual"
+  }
+}

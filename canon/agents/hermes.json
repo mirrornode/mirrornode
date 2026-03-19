@@ -1,0 +1,13 @@
+{
+  "id": "hermes",
+  "name": "Hermes",
+  "version": "1.0.0",
+  "role": "oracle-bridge",
+  "status": "active",
+  "description": "Oracle bridge and Ray actor coordinator. Routes between THOTH, PTAH, Osiris audits. Central lattice spine connector.",
+  "governed_by": "canon/charters/MIRRORNODE_CORE.md",
+  "registered": "2026-03-18T08:45:55.805692+00:00",
+  "endpoints": {
+    "bridge": "https://mirrornode.vercel.app/invoke/hermes"
+  }
+}

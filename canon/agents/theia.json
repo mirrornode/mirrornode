@@ -1,0 +1,13 @@
+{
+  "id": "theia",
+  "name": "Theia",
+  "version": "1.0.0",
+  "role": "scaffolder",
+  "status": "active",
+  "description": "Gateway scaffolder. Generates definitions, types, interface structures. Maintains consistency between API design and mirrornode-core.",
+  "governed_by": "canon/charters/THEIA_CORE.md",
+  "registered": "2026-03-18T08:45:55.805692+00:00",
+  "endpoints": {
+    "gateway": "https://mirrornode.vercel.app/invoke/theia"
+  }
+}

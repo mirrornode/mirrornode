@@ -1,0 +1,11 @@
+{
+  "id": "pistol-shrimp",
+  "name": "Pistol Shrimp",
+  "version": "0.0.1",
+  "role": "universal-plugin",
+  "status": "planned",
+  "description": "Universal plugin layer. Any service, platform, language, modality. AI-assisted UX for novice users. shrimp_adapter wired in Olympus kernel/.",
+  "governed_by": "canon/charters/MIRRORNODE_CORE.md",
+  "registered": "2026-03-18T08:45:55.805692+00:00",
+  "adapter": "core/kernel/shrimp_adapter"
+}
