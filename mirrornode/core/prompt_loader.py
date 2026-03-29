@@ -49,3 +49,15 @@ def load_prompt(agent_name: str, cache_file: Optional[Path] = None) -> str:
             f.write(md)
     
     return prompts[agent_name]
+
+def load_handbook(path: Optional[Path] = None) -> Dict[str, str]:
+    """
+    Load the full handbook (all prompts) from Gist.
+    Alias used by canon_loader and sweep gates.
+    """
+    md = fetch_gist()
+    if path:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, 'w') as f:
+            f.write(md)
+    return parse_prompts(md)
