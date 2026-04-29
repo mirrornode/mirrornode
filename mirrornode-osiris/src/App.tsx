@@ -1,55 +1,107 @@
-import { useState, useEffect } from 'react'
-import { oraclePing, oracleRoute } from './lib/oracle'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 
+type AuditStatus = 'pass' | 'neutral' | 'warn' | 'fail'
+
+interface Verdict {
+  node: string
+  timestamp: string
+  audit: {
+    canon_integrity: AuditStatus
+    dependencies_healthy: AuditStatus
+  }
+  mirror: {
+    result: string
+    verified: boolean
+  }
+}
+
+const STATUS_COLOR: Record<AuditStatus, string> = {
+  pass: '#00ff88',
+  neutral: '#888',
+  warn: '#ffaa00',
+  fail: '#ff4444',
+}
+
+function Badge({ status }: { status: AuditStatus }) {
+  return (
+    <span style={{
+      color: STATUS_COLOR[status],
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      fontSize: '0.85rem',
+    }}>
+      {status}
+    </span>
+  )
+}
+
 function App() {
-  const [status, setStatus] = useState('Connecting...')
-  const [lastError, setLastError] = useState('')
-  const [results, setResults] = useState(null)
-
-  const testConnection = async () => {
-    try {
-      setStatus('Testing...')
-      const ping = await oraclePing() as any
-      setStatus(`Connected: ${ping.status}`)
-      setLastError('')
-    } catch (error: any) {
-      setStatus('Failed')
-      setLastError(error.message || 'Connection failed')
-    }
-  }
-
-  const runAudit = async () => {
-    try {
-      setStatus('Running audit...')
-      const audit = await oracleRoute({ path: '/thoth' })
-      setResults(audit as any)
-      setStatus('Audit complete')
-    } catch (error: any) {
-      setStatus('Audit failed')
-      setLastError(error.message || 'Audit failed')
-    }
-  }
+  const [verdicts, setVerdicts] = useState<Verdict[]>([])
+  const [connected, setConnected] = useState(false)
+  const [error, setError] = useState('')
+  const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
-    testConnection()
+    const connect = () => {
+      const ws = new WebSocket('ws://localhost:7701/ws/ptah/verdicts')
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        setConnected(true)
+        setError('')
+      }
+
+      ws.onmessage = (e) => {
+        const verdict: Verdict = JSON.parse(e.data)
+        setVerdicts(prev => [verdict, ...prev].slice(0, 20))
+      }
+
+      ws.onerror = () => {
+        setError('WebSocket error — is backend running?')
+        setConnected(false)
+      }
+
+      ws.onclose = () => {
+        setConnected(false)
+        setTimeout(connect, 3000)
+      }
+    }
+
+    connect()
+    return () => wsRef.current?.close()
   }, [])
 
   return (
     <div className="App">
       <h1>Osiris Audit HUD</h1>
       <div className="status">
-        <h2>Status: {status}</h2>
-        {lastError && <p className="error">Error: {lastError}</p>}
-        <button onClick={testConnection}>Test Connection</button>
-        <button onClick={runAudit}>Run Audit</button>
+        <span style={{ color: connected ? '#00ff88' : '#ff4444' }}>
+          {connected ? '● LIVE' : '○ CONNECTING...'}
+        </span>
+        {error && <p className="error">{error}</p>}
       </div>
-      {results && (
-        <div className="results">
-          <h3>Audit Results:</h3>
-          <pre>{JSON.stringify(results, null, 2)}</pre>
-        </div>
-      )}
+
+      <div className="verdicts">
+        {verdicts.length === 0 && connected && (
+          <p style={{ color: '#888' }}>Waiting for verdicts...</p>
+        )}
+        {verdicts.map((v, i) => (
+          <div key={i} className="verdict-card">
+            <div className="verdict-header">
+              <strong>{v.node}</strong>
+              <span style={{ color: '#555', fontSize: '0.75rem' }}>
+                {new Date(v.timestamp).toLocaleTimeString()}
+              </span>
+            </div>
+            <div className="verdict-body">
+              <span>canon_integrity: <Badge status={v.audit.canon_integrity} /></span>
+              <span>dependencies: <Badge status={v.audit.dependencies_healthy} /></span>
+              <span>mirror: <Badge status={v.mirror.result as AuditStatus} /></span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
