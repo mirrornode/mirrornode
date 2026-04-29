@@ -9,7 +9,7 @@ app.use(express.json({ limit: "2mb" }));
  */
 const OraclePayloadSchema = z.object({
   instruction: z.string(),
-  data: z.record(z.any()).optional(),
+  data: z.record(z.string(), z.any()).optional(),
   requestId: z.string().optional()
 });
 
