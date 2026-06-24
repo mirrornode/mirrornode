@@ -1,0 +1,67 @@
+name: Oracle CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "services/oracle/**"
+      - ".github/workflows/oracle-ci.yml"
+  pull_request:
+    paths:
+      - "services/oracle/**"
+      - ".github/workflows/oracle-ci.yml"
+
+jobs:
+  oracle-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/oracle
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Run Oracle unit tests
+        id: tests
+        run: pnpm test
+
+      # Report test outcome to Merlin (the orchestrator) via the MirrorNode
+      # Spine event log. Non-blocking: a reporting hiccup must not mask the
+      # test result above. Never sends secrets — only run metadata.
+      - name: Report results to Merlin
+        if: always()
+        continue-on-error: true
+        run: |
+          curl -sf -X POST https://mirrornode.vercel.app/events/log \
+            -H "Content-Type: application/json" \
+            -d '{
+              "source": "${{ github.repository }}",
+              "event_type": "ANALYSIS",
+              "payload": {
+                "agent": "merlin",
+                "report": "oracle-ci",
+                "result": "${{ steps.tests.outcome }}",
+                "commit": "${{ github.sha }}",
+                "branch": "${{ github.ref_name }}",
+                "actor": "${{ github.actor }}",
+                "run_id": "${{ github.run_id }}",
+                "run_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              }
+            }' || echo "Merlin report failed (non-blocking)"
