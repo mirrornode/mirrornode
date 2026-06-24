@@ -41,3 +41,5 @@ logs/
 .env.keys
 *.backup
 keypairs-backup.json
+.env.production.local
+.env.development.local
