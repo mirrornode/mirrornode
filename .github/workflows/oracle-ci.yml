@@ -15,9 +15,6 @@ on:
 jobs:
   oracle-tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/oracle
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,15 +29,17 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install dependencies
+      # Install from the workspace root so monorepo hoisting resolves
+      # shared types (e.g. @types/node) correctly for the oracle package.
+      - name: Install workspace dependencies
         run: pnpm install --no-frozen-lockfile
 
       - name: Typecheck
-        run: pnpm exec tsc --noEmit
+        run: pnpm --filter @mirrornode/oracle exec tsc --noEmit
 
       - name: Run Oracle unit tests
         id: tests
-        run: pnpm test
+        run: pnpm --filter @mirrornode/oracle test
 
       # Report test outcome to Merlin (the orchestrator) via the MirrorNode
       # Spine event log. Non-blocking: a reporting hiccup must not mask the
