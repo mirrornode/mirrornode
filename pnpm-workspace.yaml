@@ -2,4 +2,4 @@ packages:
   - "cores/*"
   - "agents/*"
   - "starter-kits/*"
-
+  - "services/*"
