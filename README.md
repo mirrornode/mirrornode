@@ -5,8 +5,11 @@ The canonical monorepo for the MIRRORNODE distributed AI orchestration system.
 ## 🌐 Canonical Deployment URLs
 
 ### Production Surfaces
-- **MIRRORNODE Public HUD**: [https://mirrornode-qsu3fnwh1-inphase.vercel.app/](https://mirrornode-qsu3fnwh1-inphase.vercel.app/)  
-  Shared space for agents-in-repos work, refactors, fixes, HUD iteration, and "make it work" sessions.
+- **Parallax Front-of-House**: [https://parallax.mirrornode.xyz](https://parallax.mirrornode.xyz)  
+  Public MIRRORNODE surface for architecture modeling, risk-first positioning, and the Osiris Audit revenue path.
+
+- **Osiris Audit v1**: [https://mirrornode.xyz/audit](https://mirrornode.xyz/audit)  
+  Paid manual structural audit offer for AI-system posture review.
 
 - **Osiris Operator Console**: [https://osiris-mu.vercel.app/](https://osiris-mu.vercel.app/)  
   Operator console for MIRRORNODE Node 4, triadic lattice operator view.
@@ -22,6 +25,7 @@ The canonical monorepo for the MIRRORNODE distributed AI orchestration system.
 
 ### GitHub Organization
 - **Main Repository**: [https://github.com/mirrornode/mirrornode](https://github.com/mirrornode/mirrornode)
+- **Parallax Front-of-House**: [https://github.com/mirrornode/mirrornode-parallax](https://github.com/mirrornode/mirrornode-parallax)
 - **Osiris UI**: [https://github.com/mirrornode/osiris](https://github.com/mirrornode/osiris)
 - **Python Bridge**: [https://github.com/mirrornode/mirrornode-py](https://github.com/mirrornode/mirrornode-py)
 
@@ -133,8 +137,12 @@ Each kit is a thin client: all intelligence is imported from `mirrornode-core` v
 
 ## 📦 Shipped Products
 
-- **Osiris Audit v1** — Advisory, offline security audit tool  
-  See: `mirrornode-osiris/`
+- **Parallax Front-of-House** — Public architecture-modeling and risk-signaling surface  
+  Live: [https://parallax.mirrornode.xyz](https://parallax.mirrornode.xyz)  
+  Repo: [mirrornode/mirrornode-parallax](https://github.com/mirrornode/mirrornode-parallax)
+
+- **Osiris Audit v1** — Manual structural audit for AI-system posture review  
+  Offer: [https://mirrornode.xyz/audit](https://mirrornode.xyz/audit)
 
 ---
 
@@ -164,14 +172,15 @@ Global integration tests, contract tests, and cross-module test harnesses.
 - [ ] Bridge loop operational
 - [ ] Canonical HUD actions wired
 - [ ] Inventory "codes" documented
-- [ ] GitHub ↔ Vercel deployment confirmed
+- [x] GitHub ↔ Vercel deployment confirmed for Parallax
 - [ ] MIRRORNODE Ops documentation complete
 
 ---
 
 ## 🔗 Related Repositories
 
-- **osiris**: [github.com/mirrornode/osiris](https://github.com/mirrornode/osiris) — Operator HUD (deployed at osiris-mu.vercel.app)
+- **mirrornode-parallax**: [github.com/mirrornode/mirrornode-parallax](https://github.com/mirrornode/mirrornode-parallax) — Parallax front-of-house, deployed at [parallax.mirrornode.xyz](https://parallax.mirrornode.xyz)
+- **osiris**: [github.com/mirrornode/osiris](https://github.com/mirrornode/osiris) — Operator HUD, deployed at osiris-mu.vercel.app
 - **osiris-ui**: Private repository for advanced Osiris UI components
 - **mirrornode-py**: [github.com/mirrornode/mirrornode-py](https://github.com/mirrornode/mirrornode-py) — Python FastAPI bridge service
 
