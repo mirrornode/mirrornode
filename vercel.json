@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "framework": null,
+  "buildCommand": "echo 'No static build required for MIRRORNODE FastAPI spine'",
+  "outputDirectory": "public",
   "regions": ["iad1"],
   "routes": [{ "src": "/(.*)", "dest": "api/index.py" }],
   "functions": {
