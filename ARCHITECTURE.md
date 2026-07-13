@@ -24,3 +24,5 @@ This repo does not implement agent orchestration. Command execution is the domai
 ## Non-Routes
 
 Do not reference `/system/execute`, `/system/replay`, or `/execute-task` — these are not real routes in any MIRRORNODE service.
+
+These route names are retained only as explicit prohibition examples and must not be implemented.
