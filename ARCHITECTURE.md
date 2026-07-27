@@ -34,8 +34,4 @@ The root `vercel.json` currently uses the `@vercel/python` builder for `api/inde
 
 ## Explicit Non-Routes
 
-The following names are prohibition examples from the system contract and must not be implemented as routes:
-
-- `/system/execute`
-- `/system/replay`
-- `/execute-task`
+Routes designated as non-real by `SYSTEM_CONTRACT.md` must not be implemented or reproduced here. Treat the contract's phantom-route list as authoritative and consult it directly rather than copying route literals into repository guidance.
