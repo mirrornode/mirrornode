@@ -7,7 +7,7 @@ This repository is a TypeScript monorepo with shared packages and a standalone O
 ## Hard Rules
 
 - **This repo does not own lattice execution authority.** LUCIAN is the declared execution authority.
-- **Do not invent or implement prohibited routes.** The explicit prohibition examples are `/system/execute`, `/system/replay`, and `/execute-task`.
+- **Do not invent or implement prohibited routes.** Follow the phantom-route prohibitions recorded in `SYSTEM_CONTRACT.md`; do not reproduce or add non-real route names here.
 - **Do not describe planned integrations as active.** Verify the current code path before documenting runtime behavior.
 - **Oracle is currently a local instruction service.** It handles `PING` and `THOTH_ROUTE`; it does not yet forward commands to LUCIAN `POST /dispatch`.
 - **Keep dependency lockfiles consistent with the package manager actually used by the workspace.** The current root scripts use npm workspaces.
