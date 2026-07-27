@@ -5,6 +5,10 @@
 !vercel.json
 !requirements.txt
 
+# Un-ignore static output shim
+!public/
+!public/**
+
 # Un-ignore API entry point
 !api/
 !api/index.py
