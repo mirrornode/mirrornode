@@ -11,20 +11,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-          
+
       - name: Install dependencies
         run: |
           pip install requests PyGithub
-          
+
+      - name: Prepare audit output directory
+        run: mkdir -p vault/weekly
+
       - name: Run system audit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -32,28 +35,27 @@ jobs:
           cd canon
           make status > ../vault/weekly/status-$(date +%Y-%m-%d).txt
           make index
-          
+
       - name: Generate audit snapshot
         run: |
-          mkdir -p vault/weekly
           cat > vault/weekly/audit-$(date +%Y-%m-%d).md <<EOF
           # Weekly Audit Snapshot
           **Date**: $(date +%Y-%m-%d)
           **Time**: $(date +%H:%M:%S) UTC
           **Trigger**: Automated weekly run
-          
+
           ## System Status
           \`\`\`
           $(cat vault/weekly/status-$(date +%Y-%m-%d).txt)
           \`\`\`
-          
+
           ## Repository Index
           Total repos: $(jq 'length' repos.json)
-          
+
           ## Changes Since Last Week
           $(git log --oneline --since="7 days ago")
           EOF
-          
+
       - name: Commit audit results
         run: |
           git config user.name "MIRRORNODE Canon Bot"
