@@ -4,7 +4,7 @@ on:
   schedule:
     # Every Monday at 03:33 UTC (Sunday 7:33 PM PST)
     - cron: '33 3 * * 1'
-  workflow_dispatch: # Manual trigger option
+  workflow_dispatch:
 
 jobs:
   audit:
@@ -14,61 +14,81 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/checkout@v5
         with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          pip install requests PyGithub
+          fetch-depth: 0
 
       - name: Prepare audit output directory
         run: mkdir -p vault/weekly
 
-      - name: Run system audit
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Validate Canon structure
         run: |
-          cd canon
-          make status > ../vault/weekly/status-$(date +%Y-%m-%d).txt
-          make index
+          test -f canon/INDEX.md
+          test -f canon/scripts/audit.sh
+          test -d canon/charters
+          test -d canon/contracts
+
+      - name: Run declared-state audit
+        run: |
+          bash canon/scripts/audit.sh "https://github.com/${GITHUB_REPOSITORY}.git"
+
+      - name: Capture Canon status
+        run: |
+          DATE="$(date -u +%Y-%m-%d)"
+          STATUS="vault/weekly/status-${DATE}.txt"
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=$(git rev-parse HEAD)"
+            echo "canon_files=$(find canon -type f | wc -l | tr -d ' ')"
+            echo "charters=$(find canon/charters -maxdepth 1 -type f | wc -l | tr -d ' ')"
+            echo "contracts=$(find canon/contracts -type f | wc -l | tr -d ' ')"
+            echo "dossiers=$(find canon/dossiers -maxdepth 1 -type f | wc -l | tr -d ' ')"
+            echo "weekly_changed_files=$(git log --since='7 days ago' --name-only --pretty='' | sort -u | sed '/^$/d' | wc -l | tr -d ' ')"
+          } > "$STATUS"
+          cat "$STATUS"
 
       - name: Generate audit snapshot
         run: |
-          cat > vault/weekly/audit-$(date +%Y-%m-%d).md <<EOF
-          # Weekly Audit Snapshot
-          **Date**: $(date +%Y-%m-%d)
-          **Time**: $(date +%H:%M:%S) UTC
-          **Trigger**: Automated weekly run
+          DATE="$(date -u +%Y-%m-%d)"
+          STATUS="vault/weekly/status-${DATE}.txt"
+          LATEST_DOSSIER="$(find canon/dossiers -maxdepth 1 -type f -name 'audit-*' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
+          cat > "vault/weekly/audit-${DATE}.md" <<EOF
+          # Weekly Canon Audit Snapshot
 
-          ## System Status
+          **Date:** ${DATE}  
+          **Time:** $(date -u +%H:%M:%S) UTC  
+          **Trigger:** ${GITHUB_EVENT_NAME}  
+          **Commit:** $(git rev-parse HEAD)
+
+          ## Canon Status
           \`\`\`
-          $(cat vault/weekly/status-$(date +%Y-%m-%d).txt)
+          $(cat "$STATUS")
           \`\`\`
 
-          ## Repository Index
-          Total repos: $(jq 'length' repos.json)
+          ## Declared-State Audit
+          Latest dossier: ${LATEST_DOSSIER}
 
           ## Changes Since Last Week
-          $(git log --oneline --since="7 days ago")
+          $(git log --oneline --since='7 days ago' || true)
           EOF
 
       - name: Commit audit results
         run: |
           git config user.name "MIRRORNODE Canon Bot"
           git config user.email "canon@mirrornode.local"
-          git add vault/weekly/ repos.json index_metadata.json
-          git diff --staged --quiet || git commit -m "Weekly audit: $(date +%Y-%m-%d)"
-          git push
+          git add vault/weekly/ canon/dossiers/
+          if git diff --staged --quiet; then
+            echo "No audit changes to commit."
+            exit 0
+          fi
+          git commit -m "Weekly audit: $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push origin HEAD:main
 
-      - name: Check for drift
+      - name: Report drift signal
         run: |
-          # Calculate drift score based on uncommitted changes
-          CHANGES=$(git status --porcelain | wc -l)
-          if [ $CHANGES -gt 5 ]; then
-            echo "⚠️ HIGH DRIFT DETECTED: $CHANGES files changed"
-            echo "drift_alert=true" >> $GITHUB_ENV
+          CHANGES="$(git log --since='7 days ago' --name-only --pretty='' | sort -u | sed '/^$/d' | wc -l | tr -d ' ')"
+          echo "Files changed in the last 7 days: ${CHANGES}"
+          if [ "${CHANGES}" -gt 25 ]; then
+            echo "::warning::Elevated weekly repository change volume: ${CHANGES} files"
           fi
