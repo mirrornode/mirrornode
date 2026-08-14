@@ -3,12 +3,13 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
 jobs:
   canon-gate:
     name: Contract Compliance Check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR
+      - name: Checkout review branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -18,7 +19,16 @@ jobs:
           python-version: '3.11'
       - name: Run Canon Gate
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            BASE_SHA="${PR_BASE_SHA}"
+            HEAD_SHA="${PR_HEAD_SHA}"
+          else
+            git fetch origin main
+            BASE_SHA="$(git merge-base origin/main HEAD)"
+            HEAD_SHA="$(git rev-parse HEAD)"
+          fi
+          export BASE_SHA HEAD_SHA
           python scripts/canon_gate.py

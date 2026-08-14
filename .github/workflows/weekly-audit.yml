@@ -14,7 +14,9 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     permissions:
+      actions: write
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -77,18 +79,47 @@ jobs:
           $(git log --oneline --since='7 days ago' || true)
           EOF
 
-      - name: Commit audit results
+      - name: Publish audit review pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          DATE="$(date -u +%Y-%m-%d)"
+          BRANCH="automation/weekly-canon-audit-${DATE}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git config user.name "MIRRORNODE Canon Bot"
           git config user.email "canon@mirrornode.local"
           git add vault/weekly/ canon/dossiers/
           if git diff --staged --quiet; then
-            echo "No audit changes to commit."
+            echo "No audit changes to publish."
             exit 0
           fi
-          git commit -m "Weekly audit: $(date -u +%Y-%m-%d)"
-          git pull --rebase origin main
-          git push origin HEAD:main
+
+          git switch -c "$BRANCH"
+          git commit -m "Weekly audit: ${DATE}"
+          git push --set-upstream origin "$BRANCH"
+
+          PR_BODY="$(cat <<EOF
+          Automated weekly Canon audit evidence for ${DATE}.
+
+          - Source run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          - Review branch: ${BRANCH}
+          - Publication path: protected pull request into main
+
+          This pull request requires the repository's normal review and status checks before merge.
+          EOF
+          )"
+
+          if ! PR_URL="$(gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Weekly Canon Audit: ${DATE}" \
+            --body "$PR_BODY")"; then
+            echo "::error::The audit branch was published, but GitHub Actions could not create its pull request. Enable repository workflow permission to create pull requests, then open a PR from ${BRANCH}."
+            exit 1
+          fi
+
+          echo "Created audit pull request: ${PR_URL}"
+          gh workflow run core-ci.yml --ref "$BRANCH"
+          gh workflow run canon-gate.yml --ref "$BRANCH"
 
       - name: Report drift signal
         run: |
