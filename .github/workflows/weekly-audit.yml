@@ -45,7 +45,8 @@ jobs:
           STATUS="vault/weekly/status-${DATE}.txt"
           {
             echo "repository=${GITHUB_REPOSITORY}"
-            echo "commit=$(git rev-parse HEAD)"
+            echo "base_commit=$(git rev-parse HEAD)"
+            echo "counts_scope=generated_audit_tree_pending_review"
             echo "canon_files=$(find canon -type f | wc -l | tr -d ' ')"
             echo "charters=$(find canon/charters -maxdepth 1 -type f | wc -l | tr -d ' ')"
             echo "contracts=$(find canon/contracts -type f | wc -l | tr -d ' ')"
@@ -65,7 +66,8 @@ jobs:
           **Date:** ${DATE}  
           **Time:** $(date -u +%H:%M:%S) UTC  
           **Trigger:** ${GITHUB_EVENT_NAME}  
-          **Commit:** $(git rev-parse HEAD)
+          **Base commit:** $(git rev-parse HEAD)  
+          **Counts scope:** generated audit tree pending review
 
           ## Canon Status
           \`\`\`
