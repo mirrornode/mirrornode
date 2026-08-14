@@ -1,5 +1,6 @@
 repository=mirrornode/mirrornode
-commit=3c1709a051d2cfc620e0fb28e1381a579f88e21b
+base_commit=3c1709a051d2cfc620e0fb28e1381a579f88e21b
+counts_scope=generated_audit_tree_pending_review
 canon_files=76
 charters=12
 contracts=3
