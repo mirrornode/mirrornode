@@ -6,6 +6,10 @@ on:
     - cron: '33 3 * * 1'
   workflow_dispatch:
 
+concurrency:
+  group: weekly-canon-audit
+  cancel-in-progress: false
+
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -42,7 +46,7 @@ jobs:
             echo "canon_files=$(find canon -type f | wc -l | tr -d ' ')"
             echo "charters=$(find canon/charters -maxdepth 1 -type f | wc -l | tr -d ' ')"
             echo "contracts=$(find canon/contracts -type f | wc -l | tr -d ' ')"
-            echo "dossiers=$(find canon/dossiers -maxdepth 1 -type f | wc -l | tr -d ' ')"
+            echo "dossiers=$(find canon/dossiers -type f | wc -l | tr -d ' ')"
             echo "weekly_changed_files=$(git log --since='7 days ago' --name-only --pretty='' | sort -u | sed '/^$/d' | wc -l | tr -d ' ')"
           } > "$STATUS"
           cat "$STATUS"
@@ -51,7 +55,7 @@ jobs:
         run: |
           DATE="$(date -u +%Y-%m-%d)"
           STATUS="vault/weekly/status-${DATE}.txt"
-          LATEST_DOSSIER="$(find canon/dossiers -maxdepth 1 -type f -name 'audit-*' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
+          LATEST_DOSSIER="$(find canon/dossiers -type f -name 'audit-*' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
           cat > "vault/weekly/audit-${DATE}.md" <<EOF
           # Weekly Canon Audit Snapshot
 
