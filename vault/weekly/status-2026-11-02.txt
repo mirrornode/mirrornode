@@ -1,0 +1,8 @@
+repository=mirrornode/mirrornode
+base_commit=2f670ff4d0c56b7f2d66894b0000a7db5b381cdb
+counts_scope=generated_audit_tree_pending_review
+canon_files=88
+charters=12
+contracts=3
+dossiers=46
+weekly_changed_files=30
