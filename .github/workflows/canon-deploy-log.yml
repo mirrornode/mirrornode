@@ -5,24 +5,48 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   log-to-canon:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Log deploy event to MirrorNode Spine
+        env:
+          EVENT_SOURCE: ${{ github.repository }}
+          EVENT_COMMIT: ${{ github.event.deployment.sha || github.sha }}
+          EVENT_MESSAGE: ${{ github.event.head_commit.message }}
+          EVENT_ACTOR: ${{ github.actor }}
+          EVENT_BRANCH: ${{ github.event.deployment.ref || github.ref_name }}
+          EVENT_TIMESTAMP: ${{ github.event.deployment_status.created_at || github.event.head_commit.timestamp }}
+          EVENT_RUN_ID: ${{ github.run_id }}
+          EVENT_KIND: ${{ github.event_name }}
+          DEPLOYMENT_STATE: ${{ github.event.deployment_status.state }}
+          DEPLOYMENT_STATUS_ID: ${{ github.event.deployment_status.id }}
+        shell: bash
         run: |
-          curl -X POST https://mirrornode.vercel.app/events/log \
+          set -euo pipefail
+          payload_file="$(mktemp)"
+          trap 'rm -f "$payload_file"' EXIT
+          jq -n '{
+            source: env.EVENT_SOURCE,
+            event_type: "deploy",
+            payload: {
+              commit: env.EVENT_COMMIT,
+              message: env.EVENT_MESSAGE,
+              author: env.EVENT_ACTOR,
+              branch: env.EVENT_BRANCH,
+              repo: env.EVENT_SOURCE,
+              timestamp: env.EVENT_TIMESTAMP,
+              run_id: env.EVENT_RUN_ID,
+              trigger: env.EVENT_KIND,
+              deployment_state: env.DEPLOYMENT_STATE,
+              deployment_status_id: env.DEPLOYMENT_STATUS_ID
+            }
+          }' > "$payload_file"
+          curl --fail-with-body --silent --show-error --connect-timeout 10 --max-time 30 \
+            -X POST https://mirrornode.vercel.app/events/log \
             -H "Content-Type: application/json" \
-            -d '{
-              "source": "${{ github.repository }}",
-              "event_type": "deploy",
-              "payload": {
-                "commit": "${{ github.sha }}",
-                "message": "${{ github.event.head_commit.message }}",
-                "author": "${{ github.actor }}",
-                "branch": "${{ github.ref_name }}",
-                "repo": "${{ github.repository }}",
-                "timestamp": "${{ github.event.head_commit.timestamp }}",
-                "run_id": "${{ github.run_id }}"
-              }
-            }'
+            --data-binary "@$payload_file"
