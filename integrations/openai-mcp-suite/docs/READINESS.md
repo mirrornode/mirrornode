@@ -1,0 +1,106 @@
+# Distribution readiness — MIRRORNODE suite synthetic slice v0.1
+
+Prepared 18 Nov 2026 for Operation Double Gate, Workstream B. Evidence labels: OBSERVED (read or run directly), REPORTED (stated by a source, not checked), INFERRED, BLOCKED, UNKNOWN.
+
+**Disposition: BLOCKED for release.** The synthetic slice works locally and is ready for engineering review as a draft PR. A live ChatGPT connection is blocked on an authorization server and a public HTTPS deployment, both outside this task's authority. Publication is blocked on policy and account prerequisites listed below.
+
+## 1. Integration target (B1)
+
+Sources read 18 Nov 2026 on developers.openai.com: `apps-sdk/build/mcp-server`, `apps-sdk/mcp-apps-in-chatgpt`, `apps-sdk/changelog`, `apps-sdk/app-submission-guidelines`, `plugins/build/auth`, `plugins/guides/security-privacy`, `plugins/deploy/connect-chatgpt`, `plugins/deploy/submission`.
+
+### Verified (OBSERVED in official docs)
+
+- **Naming.** The distributable unit is now a *plugin* listed in a directory shared by ChatGPT and Codex. "Apps SDK" pages remain for building the MCP server and UI. Packages that contain `apps` / `.app.json` cannot currently be submitted.
+- **Transport.** MCP Streamable HTTP, conventionally at `/mcp`. One MCP server per plugin.
+- **Tools.** `name`, `title`, `description`, `inputSchema`, `outputSchema` (recommended since May 2026 for structured results), `annotations`. Submission requires explicit booleans for `readOnlyHint`, `destructiveHint`, `openWorldHint`. Results use `structuredContent`, `content`, and `_meta` (hidden from the model; not an authorization mechanism). Server `instructions` are read at initialization; keep key guidance in the first 512 characters.
+- **Auth.** Anonymous read-only servers are allowed; customer data or writes should authenticate. OAuth 2.1 authorization code + PKCE with `S256` advertised. Protected resource metadata (RFC 9728) at `/.well-known/oauth-protected-resource` or via `WWW-Authenticate` on 401. Authorization server metadata at `/.well-known/oauth-authorization-server` or `/.well-known/openid-configuration`. Client registration by CIMD (preferred) or DCR. Redirect URI `https://chatgpt.com/connector_platform_oauth_redirect` when the AS supports RFC 9207 issuer identification. ChatGPT sends `resource`; the token should carry it as `aud`. Validate signature, `iss`, `exp`/`nbf`, audience and scopes on every request. Per-tool `securitySchemes` (`noauth`, `oauth2` with scopes). Tool-level linking via an error result with `_meta["mcp/www_authenticate"]` including `error` and `error_description`.
+- **Security and privacy.** Least privilege, data minimization, redact PII before logging, correlation ids, no raw prompt storage unless needed, server-side validation of model-provided input, human confirmation for irreversible actions, published retention policy, honor deletion, monitor auth failures, keep dependencies patched.
+- **Testing.** Public HTTPS endpoint or Secure MCP Tunnel; MCP Inspector for direct calls; add the server in ChatGPT under Plugins → Add custom MCP server.
+- **Submission.** platform.openai.com/plugins; verified individual or business; organization owner or Apps Management Write permission; plugin ZIP; stable public HTTPS endpoint with domain verification; automated tool scan; reviewer credentials for a fully featured demo account with sample data; five positive and three negative test cases; video walkthrough; release notes; policy attestations; published privacy policy; customer support contact. One active review per plugin. After approval the developer chooses when to publish; MCP server changes are rescanned daily.
+- **Policy limits that bind MIRRORNODE.** "Trial or demo plugins will not be accepted." Commerce is limited to physical goods; digital products and services cannot be sold, and plugins cannot link to checkout or upgrade flows. Restricted data (payment card data, PHI, government ids, credentials and secrets) may not be collected. No requests for full conversation history. Must work on desktop and mobile. Suitable for ages 13–17.
+
+### Optional
+
+UI component via the MCP Apps standard (`_meta.ui.resourceUri`, MIME `text/html;profile=mcp-app`; `openai/outputTemplate` is a compatibility alias); skills in the plugin package; `idempotentHint`; Codex distribution.
+
+### Unknown
+
+- Whether `securitySchemes` is authoritative at the tool's top level or in `_meta` (the auth page shows both). This slice sets both.
+- Which ChatGPT plans or workspace roles may add a custom MCP server today (the connect page only says account and workspace policies apply).
+- The allowed values for the plugin `category` field.
+- Whether an operator-only, single-tenant tool like this would be listed publicly or should stay a private custom connector.
+- Whether any authorization server MIRRORNODE already uses (for example Supabase Auth) supports CIMD or DCR, PKCE `S256` metadata and RFC 9207. Not checked.
+
+## 2. What was built (B2/B3)
+
+`integrations/openai-mcp-suite/` — TypeScript, `@modelcontextprotocol/sdk` 1.32.2 low-level `Server`, Express, `jose`, `zod` 4.6.7. Stateless Streamable HTTP with JSON responses. Ten read-only tools (see README). 27 tests pass locally with vitest 5.1.1 on Node 22. `npm audit`: 0 vulnerabilities. Output-schema validation was confirmed to fail on a deliberately broken result (mutation check, reverted).
+
+The ChatGPT leg is simulated by the MCP SDK client. No ChatGPT session was connected, because that needs a public endpoint.
+
+## 3. Integration manifest
+
+Draft only: `distribution/draft-plugin/.codex-plugin/plugin.json` and `.mcp.json`. All URLs are `example.invalid` placeholders; icons do not exist.
+
+## 4. Permission matrix
+
+| Tool | Scope | Reads | Writes | External calls | Human approval |
+|---|---|---|---|---|---|
+| theia_get_workstream_status | suite:theia.read | workstreams | none | none | none |
+| theia_list_next_actions | suite:theia.read | workstreams, actions | none | none | none (reports which actions need Operator approval) |
+| theia_build_handoff_record | suite:theia.read | workstreams, actions | none (draft returned, not sent) | none | Operator decides whether to send |
+| ptah_get_readiness | suite:ptah.read | components, findings | none | none | none |
+| ptah_propose_repair | suite:ptah.read | findings, repairs | none (not applied) | none | Review at exact head, THOTH for Medium+, Operator before merge/deploy |
+| thoth_list_findings | suite:thoth.read | findings | none | none | none |
+| thoth_get_disposition | suite:thoth.read | findings | none (never issues a verdict) | none | THOTH owns verdicts |
+| lattice_get_record | suite:lattice.read | records, contradictions | none | none | none |
+| lattice_list_contradictions | suite:lattice.read | records, contradictions | none (never resolves) | none | Resolution owner per record |
+| lattice_verify_receipts | suite:lattice.read | receipts (own only) | none | none | none |
+
+The only side effect of any call is appending its own receipt.
+
+## 5. Authentication design
+
+- **Implemented:** resource-server side. RFC 9728 metadata at `/.well-known/oauth-protected-resource` (and `/mcp` suffix). 401 + `WWW-Authenticate: Bearer resource_metadata="…"` without a token; `error="invalid_token"` with a bad token. JWT verified with `jose`: ES256/RS256 only, `iss`, `aud` = resource, `exp`/`nbf` with 30s skew, required `sub`/`exp`. Per-tool scope check with a tool-level `mcp/www_authenticate` challenge.
+- **Test-only:** `DevIssuer` mints ES256 JWTs from an in-memory key. It is not an authorization server.
+- **Missing for ChatGPT:** an authorization server with authorize/token endpoints, PKCE `S256`, CIMD or DCR, RFC 9207 `iss` in responses, consent screen, refresh tokens, and a JWKS endpoint the server can fetch (`createRemoteJWKSet`). Recommended: CIMD with the stable redirect. Operator choice.
+
+## 6. Privacy and data handling
+
+- Today: synthetic fixtures only; loader rejects anything else; fixture content test blocks email-, card-, key- and JWT-shaped strings.
+- Receipts store HMAC pseudonyms of `iss:sub`, hashes of input and output, and no raw tokens, prompts or ids. Users can list only their own receipts.
+- No conversation history requested; inputs are ids and enums with `additionalProperties: false`; 64 KB body cap.
+- Before real data: a published privacy policy and retention period (receipts and logs), deletion handling, a log-redaction policy, a decision on which real records are exposed and to whom, and THOTH review of the tool surfaces.
+
+## 7. Test results
+
+27/27 passing (vitest 5.1.1, Node 22.23.5, 18 Nov 2026). Groups: auth (13), contract and fixtures (5), journey and failure cases (9). Full list in the draft PR description.
+
+## 8. Deployment prerequisites (not authorized in this task)
+
+Public HTTPS host with a stable `/mcp` URL and verified domain; DNS-rebinding/host allowlist; production authorization server; real JWKS; persistent append-only receipt store; rate limiting and auth-failure alerting; secret management for the HMAC subject key; CI job for this package; Operator authorization; THOTH clearance.
+
+## 9. Review and publication checklist
+
+- [ ] Operator decides: private custom connector vs public directory listing
+- [ ] Replace synthetic fixtures with authorized real sources (public listing rejects demo plugins)
+- [ ] OpenAI organization verification completed; submitter has owner or Apps Management Write
+- [ ] Authorization server chosen and integrated (PKCE S256, CIMD or DCR, RFC 9207)
+- [ ] Public HTTPS endpoint, domain verification, automated tool scan passes
+- [ ] Privacy policy, terms, support URL and website published; manifest placeholders replaced
+- [ ] Icons and logos (square, ≥48 px)
+- [ ] Reviewer demo account with sample data; 5 positive + 3 negative test cases; video; release notes
+- [ ] Tested in ChatGPT on desktop and mobile
+- [ ] No pricing, checkout links or promotion in any model-readable or listing text
+- [ ] THOTH review of tool surfaces and auth; independent code review at exact head
+- [ ] Policy attestations completed by the Operator
+
+## 10. Known limitations
+
+- Synthetic data only; ChatGPT itself never connected.
+- No authorization server; dev issuer is test-only.
+- Receipts are in memory (optional local JSONL); a restart starts a new chain.
+- Stateless only; no SSE streaming or sessions.
+- No UI component.
+- Package not wired into CI.
+- Node role framing in this slice (THEIA coordination, THOTH security) follows the Operation Double Gate brief and differs from `SYSTEM_CONTRACT.md` (THEIA "Witness & Observation", THOTH "Services & Health"); LATTICE has no registry row there. Recorded, not reconciled.
+- The Osiris $149 offer cannot be sold or linked for checkout from inside a ChatGPT plugin under current commerce rules.
