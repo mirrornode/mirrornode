@@ -28,97 +28,138 @@
         "fixture_set": {
           "type": "string"
         },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
         "result": {
-          "type": "object",
-          "properties": {
-            "workstreams": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "title": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "summary": {
-                    "type": "string"
-                  },
-                  "gates": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "description": {
-                          "type": "string"
-                        },
-                        "owner_role": {
-                          "type": "string"
-                        },
-                        "state": {
-                          "type": "string",
-                          "enum": [
-                            "OPEN",
-                            "CLOSED"
-                          ]
-                        },
-                        "evidence_class": {
-                          "type": "string",
-                          "enum": [
-                            "OBSERVED",
-                            "REPORTED",
-                            "INFERRED",
-                            "BLOCKED",
-                            "UNKNOWN"
-                          ]
-                        },
-                        "evidence_ref": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "workstreams": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": "string"
+                      },
+                      "gates": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "owner_role": {
+                              "type": "string"
+                            },
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "OPEN",
+                                "CLOSED"
+                              ]
+                            },
+                            "evidence_class": {
+                              "type": "string",
+                              "enum": [
+                                "OBSERVED",
+                                "REPORTED",
+                                "INFERRED",
+                                "BLOCKED",
+                                "UNKNOWN"
+                              ]
+                            },
+                            "evidence_ref": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "description",
+                            "owner_role",
+                            "state",
+                            "evidence_class",
+                            "evidence_ref"
+                          ],
+                          "additionalProperties": false
                         }
                       },
-                      "required": [
-                        "id",
-                        "description",
-                        "owner_role",
-                        "state",
-                        "evidence_class",
-                        "evidence_ref"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "open_gate_count": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
+                      "open_gate_count": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "status",
+                      "summary",
+                      "gates",
+                      "open_gate_count"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "id",
-                  "title",
-                  "status",
-                  "summary",
-                  "gates",
-                  "open_gate_count"
-                ],
-                "additionalProperties": false
-              }
+                }
+              },
+              "required": [
+                "workstreams"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
             }
-          },
-          "required": [
-            "workstreams"
-          ],
-          "additionalProperties": false
+          ]
         },
         "receipt": {
           "type": "object",
@@ -147,6 +188,9 @@
         "node",
         "data_classification",
         "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
         "result",
         "receipt"
       ],
@@ -210,69 +254,110 @@
         "fixture_set": {
           "type": "string"
         },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
         "result": {
-          "type": "object",
-          "properties": {
-            "workstream_id": {
-              "type": "string"
-            },
-            "actions": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "required_authority": {
-                    "type": "string"
-                  },
-                  "reversible": {
-                    "type": "boolean"
-                  },
-                  "blocked_by_open_gates": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "state": {
-                    "type": "string",
-                    "enum": [
-                      "UNBLOCKED",
-                      "BLOCKED"
-                    ]
-                  },
-                  "operator_approval_required": {
-                    "type": "boolean"
-                  },
-                  "executable_by_this_server": {
-                    "type": "boolean",
-                    "const": false
-                  }
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "workstream_id": {
+                  "type": "string"
                 },
-                "required": [
-                  "id",
-                  "description",
-                  "required_authority",
-                  "reversible",
-                  "blocked_by_open_gates",
-                  "state",
-                  "operator_approval_required",
-                  "executable_by_this_server"
-                ],
-                "additionalProperties": false
-              }
+                "actions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "required_authority": {
+                        "type": "string"
+                      },
+                      "reversible": {
+                        "type": "boolean"
+                      },
+                      "blocked_by_open_gates": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "UNBLOCKED",
+                          "BLOCKED"
+                        ]
+                      },
+                      "operator_approval_required": {
+                        "type": "boolean"
+                      },
+                      "executable_by_this_server": {
+                        "type": "boolean",
+                        "const": false
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "description",
+                      "required_authority",
+                      "reversible",
+                      "blocked_by_open_gates",
+                      "state",
+                      "operator_approval_required",
+                      "executable_by_this_server"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "workstream_id",
+                "actions"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
             }
-          },
-          "required": [
-            "workstream_id",
-            "actions"
-          ],
-          "additionalProperties": false
+          ]
         },
         "receipt": {
           "type": "object",
@@ -301,6 +386,9 @@
         "node",
         "data_classification",
         "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
         "result",
         "receipt"
       ],
@@ -375,206 +463,247 @@
         "fixture_set": {
           "type": "string"
         },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
         "result": {
-          "type": "object",
-          "properties": {
-            "handoff": {
+          "anyOf": [
+            {
               "type": "object",
               "properties": {
-                "status": {
-                  "type": "string",
-                  "const": "DRAFT_NOT_SENT"
-                },
-                "from": {
-                  "type": "string",
-                  "const": "THEIA"
-                },
-                "to": {
-                  "type": "string"
-                },
-                "workstream_id": {
-                  "type": "string"
-                },
-                "open_gates": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "description": {
-                        "type": "string"
-                      },
-                      "owner_role": {
-                        "type": "string"
-                      },
-                      "state": {
-                        "type": "string",
-                        "enum": [
-                          "OPEN",
-                          "CLOSED"
-                        ]
-                      },
-                      "evidence_class": {
-                        "type": "string",
-                        "enum": [
-                          "OBSERVED",
-                          "REPORTED",
-                          "INFERRED",
-                          "BLOCKED",
-                          "UNKNOWN"
-                        ]
-                      },
-                      "evidence_ref": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "description",
-                      "owner_role",
-                      "state",
-                      "evidence_class",
-                      "evidence_ref"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "unblocked_actions": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "description": {
-                        "type": "string"
-                      },
-                      "required_authority": {
-                        "type": "string"
-                      },
-                      "reversible": {
-                        "type": "boolean"
-                      },
-                      "blocked_by_open_gates": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      },
-                      "state": {
-                        "type": "string",
-                        "enum": [
-                          "UNBLOCKED",
-                          "BLOCKED"
-                        ]
-                      },
-                      "operator_approval_required": {
-                        "type": "boolean"
-                      },
-                      "executable_by_this_server": {
-                        "type": "boolean",
-                        "const": false
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "description",
-                      "required_authority",
-                      "reversible",
-                      "blocked_by_open_gates",
-                      "state",
-                      "operator_approval_required",
-                      "executable_by_this_server"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "blocked_actions": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "description": {
-                        "type": "string"
-                      },
-                      "required_authority": {
-                        "type": "string"
-                      },
-                      "reversible": {
-                        "type": "boolean"
-                      },
-                      "blocked_by_open_gates": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      },
-                      "state": {
-                        "type": "string",
-                        "enum": [
-                          "UNBLOCKED",
-                          "BLOCKED"
-                        ]
-                      },
-                      "operator_approval_required": {
-                        "type": "boolean"
-                      },
-                      "executable_by_this_server": {
-                        "type": "boolean",
-                        "const": false
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "description",
-                      "required_authority",
-                      "reversible",
-                      "blocked_by_open_gates",
-                      "state",
-                      "operator_approval_required",
-                      "executable_by_this_server"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "evidence_counts": {
+                "handoff": {
                   "type": "object",
-                  "propertyNames": {
-                    "type": "string"
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "DRAFT_NOT_SENT"
+                    },
+                    "from": {
+                      "type": "string",
+                      "const": "THEIA"
+                    },
+                    "to": {
+                      "type": "string"
+                    },
+                    "workstream_id": {
+                      "type": "string"
+                    },
+                    "open_gates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "owner_role": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "OPEN",
+                              "CLOSED"
+                            ]
+                          },
+                          "evidence_class": {
+                            "type": "string",
+                            "enum": [
+                              "OBSERVED",
+                              "REPORTED",
+                              "INFERRED",
+                              "BLOCKED",
+                              "UNKNOWN"
+                            ]
+                          },
+                          "evidence_ref": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "description",
+                          "owner_role",
+                          "state",
+                          "evidence_class",
+                          "evidence_ref"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "unblocked_actions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "required_authority": {
+                            "type": "string"
+                          },
+                          "reversible": {
+                            "type": "boolean"
+                          },
+                          "blocked_by_open_gates": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "UNBLOCKED",
+                              "BLOCKED"
+                            ]
+                          },
+                          "operator_approval_required": {
+                            "type": "boolean"
+                          },
+                          "executable_by_this_server": {
+                            "type": "boolean",
+                            "const": false
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "description",
+                          "required_authority",
+                          "reversible",
+                          "blocked_by_open_gates",
+                          "state",
+                          "operator_approval_required",
+                          "executable_by_this_server"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "blocked_actions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "required_authority": {
+                            "type": "string"
+                          },
+                          "reversible": {
+                            "type": "boolean"
+                          },
+                          "blocked_by_open_gates": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "UNBLOCKED",
+                              "BLOCKED"
+                            ]
+                          },
+                          "operator_approval_required": {
+                            "type": "boolean"
+                          },
+                          "executable_by_this_server": {
+                            "type": "boolean",
+                            "const": false
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "description",
+                          "required_authority",
+                          "reversible",
+                          "blocked_by_open_gates",
+                          "state",
+                          "operator_approval_required",
+                          "executable_by_this_server"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "evidence_counts": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    }
                   },
-                  "additionalProperties": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  }
+                  "required": [
+                    "status",
+                    "from",
+                    "to",
+                    "workstream_id",
+                    "open_gates",
+                    "unblocked_actions",
+                    "blocked_actions",
+                    "evidence_counts"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
-                "status",
-                "from",
-                "to",
-                "workstream_id",
-                "open_gates",
-                "unblocked_actions",
-                "blocked_actions",
-                "evidence_counts"
+                "handoff"
               ],
               "additionalProperties": false
+            },
+            {
+              "type": "null"
             }
-          },
-          "required": [
-            "handoff"
-          ],
-          "additionalProperties": false
+          ]
         },
         "receipt": {
           "type": "object",
@@ -603,6 +732,9 @@
         "node",
         "data_classification",
         "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
         "result",
         "receipt"
       ],
@@ -666,97 +798,138 @@
         "fixture_set": {
           "type": "string"
         },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
         "result": {
-          "type": "object",
-          "properties": {
-            "component_id": {
-              "type": "string"
-            },
-            "title": {
-              "type": "string"
-            },
-            "readiness": {
-              "type": "string"
-            },
-            "evidence": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "claim": {
-                    "type": "string"
-                  },
-                  "evidence_class": {
-                    "type": "string",
-                    "enum": [
-                      "OBSERVED",
-                      "REPORTED",
-                      "INFERRED",
-                      "BLOCKED",
-                      "UNKNOWN"
-                    ]
-                  },
-                  "ref": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "component_id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "readiness": {
+                  "type": "string"
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "claim": {
+                        "type": "string"
+                      },
+                      "evidence_class": {
+                        "type": "string",
+                        "enum": [
+                          "OBSERVED",
+                          "REPORTED",
+                          "INFERRED",
+                          "BLOCKED",
+                          "UNKNOWN"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "claim",
+                      "evidence_class",
+                      "ref"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "unverified_claims": {
+                  "type": "array",
+                  "items": {
                     "type": "string"
                   }
                 },
-                "required": [
-                  "claim",
-                  "evidence_class",
-                  "ref"
-                ],
-                "additionalProperties": false
-              }
-            },
-            "unverified_claims": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "open_findings": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "severity": {
-                    "type": "string"
-                  },
-                  "title": {
-                    "type": "string"
-                  },
-                  "disposition_status": {
-                    "type": "string",
-                    "enum": [
-                      "HOLD",
-                      "CLEARED",
-                      "CLEARED_WITH_CONDITIONS",
-                      "PENDING_THOTH_REVIEW"
-                    ]
+                "open_findings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "disposition_status": {
+                        "type": "string",
+                        "enum": [
+                          "HOLD",
+                          "CLEARED",
+                          "CLEARED_WITH_CONDITIONS",
+                          "PENDING_THOTH_REVIEW"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "severity",
+                      "title",
+                      "disposition_status"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "id",
-                  "severity",
-                  "title",
-                  "disposition_status"
-                ],
-                "additionalProperties": false
-              }
+                }
+              },
+              "required": [
+                "component_id",
+                "title",
+                "readiness",
+                "evidence",
+                "unverified_claims",
+                "open_findings"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
             }
-          },
-          "required": [
-            "component_id",
-            "title",
-            "readiness",
-            "evidence",
-            "unverified_claims",
-            "open_findings"
-          ],
-          "additionalProperties": false
+          ]
         },
         "receipt": {
           "type": "object",
@@ -785,6 +958,9 @@
         "node",
         "data_classification",
         "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
         "result",
         "receipt"
       ],
@@ -848,74 +1024,115 @@
         "fixture_set": {
           "type": "string"
         },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
         "result": {
-          "type": "object",
-          "properties": {
-            "finding_id": {
-              "type": "string"
-            },
-            "proposal": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "const": "PROPOSED_NOT_APPLIED"
-                    },
-                    "summary": {
-                      "type": "string"
-                    },
-                    "files_in_scope": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "tests_required": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "rollback": {
-                      "type": "string"
-                    },
-                    "required_approvals": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "summary",
-                    "files_in_scope",
-                    "tests_required",
-                    "rollback",
-                    "required_approvals"
-                  ],
-                  "additionalProperties": false
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "finding_id": {
+                  "type": "string"
                 },
-                {
-                  "type": "null"
+                "proposal": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "PROPOSED_NOT_APPLIED"
+                        },
+                        "summary": {
+                          "type": "string"
+                        },
+                        "files_in_scope": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "tests_required": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "rollback": {
+                          "type": "string"
+                        },
+                        "required_approvals": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "summary",
+                        "files_in_scope",
+                        "tests_required",
+                        "rollback",
+                        "required_approvals"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "reason_if_none": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
-              ]
+              },
+              "required": [
+                "finding_id",
+                "proposal",
+                "reason_if_none"
+              ],
+              "additionalProperties": false
             },
-            "reason_if_none": {
-              "type": [
-                "string",
-                "null"
-              ]
+            {
+              "type": "null"
             }
-          },
-          "required": [
-            "finding_id",
-            "proposal",
-            "reason_if_none"
-          ],
-          "additionalProperties": false
+          ]
         },
         "receipt": {
           "type": "object",
@@ -944,6 +1161,9 @@
         "node",
         "data_classification",
         "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
         "result",
         "receipt"
       ],
@@ -1018,69 +1238,110 @@
         "fixture_set": {
           "type": "string"
         },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
         "result": {
-          "type": "object",
-          "properties": {
-            "findings": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "severity": {
-                    "type": "string"
-                  },
-                  "component_id": {
-                    "type": "string"
-                  },
-                  "title": {
-                    "type": "string"
-                  },
-                  "evidence_class": {
-                    "type": "string",
-                    "enum": [
-                      "OBSERVED",
-                      "REPORTED",
-                      "INFERRED",
-                      "BLOCKED",
-                      "UNKNOWN"
-                    ]
-                  },
-                  "disposition_status": {
-                    "type": "string",
-                    "enum": [
-                      "HOLD",
-                      "CLEARED",
-                      "CLEARED_WITH_CONDITIONS",
-                      "PENDING_THOTH_REVIEW"
-                    ]
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "findings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "component_id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "evidence_class": {
+                        "type": "string",
+                        "enum": [
+                          "OBSERVED",
+                          "REPORTED",
+                          "INFERRED",
+                          "BLOCKED",
+                          "UNKNOWN"
+                        ]
+                      },
+                      "disposition_status": {
+                        "type": "string",
+                        "enum": [
+                          "HOLD",
+                          "CLEARED",
+                          "CLEARED_WITH_CONDITIONS",
+                          "PENDING_THOTH_REVIEW"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "severity",
+                      "component_id",
+                      "title",
+                      "evidence_class",
+                      "disposition_status"
+                    ],
+                    "additionalProperties": false
                   }
                 },
-                "required": [
-                  "id",
-                  "severity",
-                  "component_id",
-                  "title",
-                  "evidence_class",
-                  "disposition_status"
-                ],
-                "additionalProperties": false
-              }
+                "holds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "findings",
+                "holds"
+              ],
+              "additionalProperties": false
             },
-            "holds": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+            {
+              "type": "null"
             }
-          },
-          "required": [
-            "findings",
-            "holds"
-          ],
-          "additionalProperties": false
+          ]
         },
         "receipt": {
           "type": "object",
@@ -1109,6 +1370,9 @@
         "node",
         "data_classification",
         "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
         "result",
         "receipt"
       ],
@@ -1172,70 +1436,111 @@
         "fixture_set": {
           "type": "string"
         },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
         "result": {
-          "type": "object",
-          "properties": {
-            "finding_id": {
-              "type": "string"
-            },
-            "severity": {
-              "type": "string"
-            },
-            "title": {
-              "type": "string"
-            },
-            "disposition": {
+          "anyOf": [
+            {
               "type": "object",
               "properties": {
-                "status": {
-                  "type": "string",
-                  "enum": [
-                    "HOLD",
-                    "CLEARED",
-                    "CLEARED_WITH_CONDITIONS",
-                    "PENDING_THOTH_REVIEW"
-                  ]
+                "finding_id": {
+                  "type": "string"
                 },
-                "recorded_by": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                "severity": {
+                  "type": "string"
                 },
-                "recorded_at": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                "title": {
+                  "type": "string"
                 },
-                "clearance_requirements": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
+                "disposition": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "HOLD",
+                        "CLEARED",
+                        "CLEARED_WITH_CONDITIONS",
+                        "PENDING_THOTH_REVIEW"
+                      ]
+                    },
+                    "recorded_by": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "recorded_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "clearance_requirements": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "recorded_by",
+                    "recorded_at",
+                    "clearance_requirements"
+                  ],
+                  "additionalProperties": false
+                },
+                "verdict_issued_by_this_tool": {
+                  "type": "boolean",
+                  "const": false
                 }
               },
               "required": [
-                "status",
-                "recorded_by",
-                "recorded_at",
-                "clearance_requirements"
+                "finding_id",
+                "severity",
+                "title",
+                "disposition",
+                "verdict_issued_by_this_tool"
               ],
               "additionalProperties": false
             },
-            "verdict_issued_by_this_tool": {
-              "type": "boolean",
-              "const": false
+            {
+              "type": "null"
             }
-          },
-          "required": [
-            "finding_id",
-            "severity",
-            "title",
-            "disposition",
-            "verdict_issued_by_this_tool"
-          ],
-          "additionalProperties": false
+          ]
         },
         "receipt": {
           "type": "object",
@@ -1264,6 +1569,9 @@
         "node",
         "data_classification",
         "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
         "result",
         "receipt"
       ],
@@ -1298,7 +1606,7 @@
   {
     "name": "lattice_get_record",
     "title": "Get source-of-truth record",
-    "description": "Use this to retrieve one synthetic source-of-truth record with its provenance (evidence class, source reference, who recorded it and when) and any contradictions that involve it. Read-only.",
+    "description": "Use this to retrieve one synthetic source-of-truth record with its attribution (evidence class, cited source, who recorded it and when) and any contradictions that involve it. Attribution says where a record says it came from; it does not establish that the record is true or approved. Read-only.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1327,101 +1635,142 @@
         "fixture_set": {
           "type": "string"
         },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
         "result": {
-          "type": "object",
-          "properties": {
-            "record": {
+          "anyOf": [
+            {
               "type": "object",
               "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                },
-                "provenance": {
+                "record": {
                   "type": "object",
                   "properties": {
-                    "evidence_class": {
-                      "type": "string",
-                      "enum": [
-                        "OBSERVED",
-                        "REPORTED",
-                        "INFERRED",
-                        "BLOCKED",
-                        "UNKNOWN"
-                      ]
-                    },
-                    "source_ref": {
+                    "id": {
                       "type": "string"
                     },
-                    "recorded_at": {
+                    "title": {
                       "type": "string"
                     },
-                    "recorded_by": {
+                    "value": {
                       "type": "string"
+                    },
+                    "attribution": {
+                      "type": "object",
+                      "properties": {
+                        "evidence_class": {
+                          "type": "string",
+                          "enum": [
+                            "OBSERVED",
+                            "REPORTED",
+                            "INFERRED",
+                            "BLOCKED",
+                            "UNKNOWN"
+                          ]
+                        },
+                        "source_ref": {
+                          "type": "string"
+                        },
+                        "recorded_at": {
+                          "type": "string"
+                        },
+                        "recorded_by": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "evidence_class",
+                        "source_ref",
+                        "recorded_at",
+                        "recorded_by"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
-                    "evidence_class",
-                    "source_ref",
-                    "recorded_at",
-                    "recorded_by"
+                    "id",
+                    "title",
+                    "value",
+                    "attribution"
                   ],
                   "additionalProperties": false
+                },
+                "contradictions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "resolution_owner": {
+                        "type": "string"
+                      },
+                      "record_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "description",
+                      "status",
+                      "resolution_owner",
+                      "record_ids"
+                    ],
+                    "additionalProperties": false
+                  }
                 }
               },
               "required": [
-                "id",
-                "title",
-                "value",
-                "provenance"
+                "record",
+                "contradictions"
               ],
               "additionalProperties": false
             },
-            "contradictions": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "resolution_owner": {
-                    "type": "string"
-                  },
-                  "record_ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "required": [
-                  "id",
-                  "description",
-                  "status",
-                  "resolution_owner",
-                  "record_ids"
-                ],
-                "additionalProperties": false
-              }
+            {
+              "type": "null"
             }
-          },
-          "required": [
-            "record",
-            "contradictions"
-          ],
-          "additionalProperties": false
+          ]
         },
         "receipt": {
           "type": "object",
@@ -1450,6 +1799,9 @@
         "node",
         "data_classification",
         "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
         "result",
         "receipt"
       ],
@@ -1512,76 +1864,117 @@
         "fixture_set": {
           "type": "string"
         },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
         "result": {
-          "type": "object",
-          "properties": {
-            "contradictions": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "resolution_owner": {
-                    "type": "string"
-                  },
-                  "sides": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "record_id": {
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "string"
-                        },
-                        "evidence_class": {
-                          "type": "string",
-                          "enum": [
-                            "OBSERVED",
-                            "REPORTED",
-                            "INFERRED",
-                            "BLOCKED",
-                            "UNKNOWN"
-                          ]
-                        },
-                        "source_ref": {
-                          "type": "string"
-                        }
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "contradictions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      "required": [
-                        "record_id",
-                        "value",
-                        "evidence_class",
-                        "source_ref"
-                      ],
-                      "additionalProperties": false
-                    }
+                      "description": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "resolution_owner": {
+                        "type": "string"
+                      },
+                      "sides": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "record_id": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            },
+                            "evidence_class": {
+                              "type": "string",
+                              "enum": [
+                                "OBSERVED",
+                                "REPORTED",
+                                "INFERRED",
+                                "BLOCKED",
+                                "UNKNOWN"
+                              ]
+                            },
+                            "source_ref": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "record_id",
+                            "value",
+                            "evidence_class",
+                            "source_ref"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "description",
+                      "status",
+                      "resolution_owner",
+                      "sides"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "id",
-                  "description",
-                  "status",
-                  "resolution_owner",
-                  "sides"
-                ],
-                "additionalProperties": false
-              }
+                }
+              },
+              "required": [
+                "contradictions"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
             }
-          },
-          "required": [
-            "contradictions"
-          ],
-          "additionalProperties": false
+          ]
         },
         "receipt": {
           "type": "object",
@@ -1610,6 +2003,9 @@
         "node",
         "data_classification",
         "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
         "result",
         "receipt"
       ],
@@ -1642,9 +2038,9 @@
     }
   },
   {
-    "name": "lattice_verify_receipts",
-    "title": "Verify evidence receipts",
-    "description": "Use this to verify the hash chain of evidence receipts on this server and list the receipts created for the current signed-in user. Other users' receipts are counted in the chain check but never listed.",
+    "name": "lattice_check_receipt_chain",
+    "title": "Check receipt hash chain",
+    "description": "Use this to recompute the hash chain of evidence receipts on this server and list receipts created for the current signed-in user. A consistent chain means each stored receipt matches its recorded hash and link; it does not establish that any result was true, approved or authorized. Other users' receipts are counted but never listed.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1669,83 +2065,153 @@
         "fixture_set": {
           "type": "string"
         },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
         "result": {
-          "type": "object",
-          "properties": {
-            "chain": {
+          "anyOf": [
+            {
               "type": "object",
               "properties": {
-                "valid": {
-                  "type": "boolean"
-                },
-                "checked": {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
-                },
-                "first_invalid_sequence": {
-                  "anyOf": [
-                    {
+                "chain": {
+                  "type": "object",
+                  "properties": {
+                    "hash_chain_consistent": {
+                      "type": "boolean"
+                    },
+                    "checked": {
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
                     },
-                    {
-                      "type": "null"
+                    "first_mismatch_sequence": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "semantics": {
+                      "type": "string",
+                      "const": "Hash and link recomputation only. Not a truth, approval or authorization claim."
                     }
-                  ]
+                  },
+                  "required": [
+                    "hash_chain_consistent",
+                    "checked",
+                    "first_mismatch_sequence",
+                    "semantics"
+                  ],
+                  "additionalProperties": false
+                },
+                "receipts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "receipt_id": {
+                        "type": "string"
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "tool": {
+                        "type": "string"
+                      },
+                      "outcome": {
+                        "type": "string",
+                        "enum": [
+                          "success",
+                          "partial",
+                          "unavailable",
+                          "failed",
+                          "unsupported"
+                        ]
+                      },
+                      "reason_codes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "SOURCE_MISSING",
+                            "SOURCE_UNREADABLE",
+                            "SOURCE_MALFORMED",
+                            "SCHEMA_UNSUPPORTED",
+                            "INTEGRITY_MISMATCH",
+                            "SCAN_INCOMPLETE",
+                            "SOURCE_STALE",
+                            "MCP_INTERNAL_ERROR"
+                          ]
+                        }
+                      },
+                      "invoked_at": {
+                        "type": "string"
+                      },
+                      "receipt_sha256": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "receipt_id",
+                      "sequence",
+                      "tool",
+                      "outcome",
+                      "reason_codes",
+                      "invoked_at",
+                      "receipt_sha256"
+                    ],
+                    "additionalProperties": false
+                  }
                 }
               },
               "required": [
-                "valid",
-                "checked",
-                "first_invalid_sequence"
+                "chain",
+                "receipts"
               ],
               "additionalProperties": false
             },
-            "receipts": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "receipt_id": {
-                    "type": "string"
-                  },
-                  "sequence": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  "tool": {
-                    "type": "string"
-                  },
-                  "outcome": {
-                    "type": "string"
-                  },
-                  "invoked_at": {
-                    "type": "string"
-                  },
-                  "receipt_sha256": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "receipt_id",
-                  "sequence",
-                  "tool",
-                  "outcome",
-                  "invoked_at",
-                  "receipt_sha256"
-                ],
-                "additionalProperties": false
-              }
+            {
+              "type": "null"
             }
-          },
-          "required": [
-            "chain",
-            "receipts"
-          ],
-          "additionalProperties": false
+          ]
         },
         "receipt": {
           "type": "object",
@@ -1774,13 +2240,16 @@
         "node",
         "data_classification",
         "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
         "result",
         "receipt"
       ],
       "additionalProperties": false
     },
     "annotations": {
-      "title": "Verify evidence receipts",
+      "title": "Check receipt hash chain",
       "readOnlyHint": true,
       "destructiveHint": false,
       "openWorldHint": false,

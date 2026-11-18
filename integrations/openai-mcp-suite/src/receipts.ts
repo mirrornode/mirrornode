@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import type { Outcome, ReasonCode } from "./tools.js";
 
 /** Deterministic JSON (sorted keys) so hashes are reproducible. */
 export function canonicalJson(value: unknown): string {
@@ -18,7 +19,8 @@ export interface Receipt {
   tool: string;
   node: "THEIA" | "PTAH" | "THOTH" | "LATTICE";
   invoked_at: string;
-  outcome: "OK" | "DENIED" | "NOT_FOUND" | "INVALID_INPUT";
+  outcome: Outcome;
+  reason_codes: ReasonCode[];
   subject_sha256: string; // HMAC-SHA256 pseudonym of iss:sub
   client_id: string;
   scopes_granted: string[];
@@ -63,15 +65,15 @@ export class ReceiptLedger {
   all(): readonly Receipt[] { return this.receipts; }
 
   /** Recomputes every hash and link. Returns the first broken sequence number, if any. */
-  verify(list: readonly Receipt[] = this.receipts): { valid: boolean; checked: number; first_invalid_sequence: number | null } {
+  verify(list: readonly Receipt[] = this.receipts): { consistent: boolean; checked: number; first_mismatch_sequence: number | null } {
     let prevHash: string | null = null;
     for (const r of list) {
       const { receipt_sha256, ...body } = r;
       if (r.prev_receipt_sha256 !== prevHash || sha256(canonicalJson(body)) !== receipt_sha256) {
-        return { valid: false, checked: list.length, first_invalid_sequence: r.sequence };
+        return { consistent: false, checked: list.length, first_mismatch_sequence: r.sequence };
       }
       prevHash = receipt_sha256;
     }
-    return { valid: true, checked: list.length, first_invalid_sequence: null };
+    return { consistent: true, checked: list.length, first_mismatch_sequence: null };
   }
 }

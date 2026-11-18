@@ -33,7 +33,7 @@ UI component via the MCP Apps standard (`_meta.ui.resourceUri`, MIME `text/html;
 
 ## 2. What was built (B2/B3)
 
-`integrations/openai-mcp-suite/` — TypeScript, `@modelcontextprotocol/sdk` 1.32.2 low-level `Server`, Express, `jose`, `zod` 4.6.7. Stateless Streamable HTTP with JSON responses. Ten read-only tools (see README). 27 tests pass locally with vitest 5.1.1 on Node 22. `npm audit`: 0 vulnerabilities. Output-schema validation was confirmed to fail on a deliberately broken result (mutation check, reverted).
+`integrations/openai-mcp-suite/` — TypeScript, `@modelcontextprotocol/sdk` 1.32.2 low-level `Server`, Express, `jose`, `zod` 4.6.7. Stateless Streamable HTTP with JSON responses. Ten read-only tools (see README). 29 tests pass locally with vitest 5.1.1 on Node 22. `npm audit`: 0 vulnerabilities. Output-schema validation was confirmed to fail on a deliberately broken result (mutation check, reverted).
 
 The ChatGPT leg is simulated by the MCP SDK client. No ChatGPT session was connected, because that needs a public endpoint.
 
@@ -54,7 +54,7 @@ Draft only: `distribution/draft-plugin/.codex-plugin/plugin.json` and `.mcp.json
 | thoth_get_disposition | suite:thoth.read | findings | none (never issues a verdict) | none | THOTH owns verdicts |
 | lattice_get_record | suite:lattice.read | records, contradictions | none | none | none |
 | lattice_list_contradictions | suite:lattice.read | records, contradictions | none (never resolves) | none | Resolution owner per record |
-| lattice_verify_receipts | suite:lattice.read | receipts (own only) | none | none | none |
+| lattice_check_receipt_chain | suite:lattice.read | receipts (own only) | none | none | none |
 
 The only side effect of any call is appending its own receipt.
 
@@ -73,7 +73,7 @@ The only side effect of any call is appending its own receipt.
 
 ## 7. Test results
 
-27/27 passing (vitest 5.1.1, Node 22.23.5, 18 Nov 2026). Groups: auth (13), contract and fixtures (5), journey and failure cases (9). Full list in the draft PR description.
+29/29 passing (vitest 5.1.1, Node 22.23.5, 18 Nov 2026). Groups: auth (13), contract and fixtures (5), journey, failure cases and CG-0032 failure mapping (11). Full list in the draft PR description.
 
 ## 8. Deployment prerequisites (not authorized in this task)
 
@@ -94,7 +94,14 @@ Public HTTPS host with a stable `/mcp` URL and verified domain; DNS-rebinding/ho
 - [ ] THOTH review of tool surfaces and auth; independent code review at exact head
 - [ ] Policy attestations completed by the Operator
 
-## 10. Known limitations
+## 10. MIRRORNODE governance gates (CORE-HUB)
+
+- **CG-0032 MCP Surface Contract** (accepted 2026-07-23): read-only projection only; grants no implementation, deployment, remote-exposure or write authority. This slice follows its §7 allowlisting, §4/§5 neutral integrity wording, §12 outcome/completeness/reason codes and §14 anti-capabilities. Not yet reviewed against it by anyone other than its author.
+- **CORE-HUB PR #71** (draft, NOT RATIFIED): proposes THEIA, PTAH, THOTH products plus an internal Lattice, with Gates A–E. This slice is an early Gate C artifact (isolated, synthetic, read-only). Gate A (PTAH feasibility, Hermes research, THOTH review) and Gate B (Operator disposition, Council matter, CG-0032 expansion) are open.
+- **Open Operator decision from PR #71 §7:** whether LATTICE is internal-only in v0.1. This slice exposes LATTICE tools to the client; if the answer is internal-only, drop the three `lattice_*` tools and keep receipts server-side.
+- **Related:** mirrornode-osiris draft PR #8 (THEIA's synthetic stdio probe on a 2026-07-28 MCP wire shape). This slice uses SDK 1.32.2, whose latest protocol version is 2025-11-25. Which revision ChatGPT negotiates today is UNKNOWN.
+
+## 11. Known limitations
 
 - Synthetic data only; ChatGPT itself never connected.
 - No authorization server; dev issuer is test-only.

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { startHarness, type Harness } from "./helpers.js";
 import { ALL_SCOPES, SCOPES } from "../src/auth.js";
 import { INSTRUCTIONS } from "../src/server.js";
+import { TOOLS } from "../src/tools.js";
 
 let h: Harness;
 beforeAll(async () => { h = await startHarness(); });
@@ -19,7 +20,7 @@ const CALLS: Array<[string, Record<string, unknown>]> = [
   ["thoth_get_disposition", { finding_id: "FND-SYN-002" }],
   ["lattice_get_record", { record_id: "REC-SYN-004" }],
   ["lattice_list_contradictions", { status: "UNRESOLVED" }],
-  ["lattice_verify_receipts", {}],
+  ["lattice_check_receipt_chain", {}],
 ];
 
 describe("synthetic journey: client -> auth -> MCP tool -> structured result -> receipt", () => {
@@ -40,10 +41,11 @@ describe("synthetic journey: client -> auth -> MCP tool -> structured result -> 
       expect(res.structuredContent.data_classification).toBe("SYNTHETIC");
       expect(res.structuredContent.receipt.receipt_id).toMatch(/^rcpt_/);
       expect(res.content[0].text).toContain(res.structuredContent.receipt.receipt_id);
-      expect(res._meta["mirrornode/receipt"].outcome).toBe("OK");
+      expect(res.structuredContent).toMatchObject({ outcome: "success", completeness: "complete", reason_codes: [] });
+      expect(res._meta["mirrornode/receipt"].outcome).toBe("success");
     }
     expect(h.suite.ledger.all().length - before).toBe(CALLS.length);
-    expect(h.suite.ledger.verify().valid).toBe(true);
+    expect(h.suite.ledger.verify().consistent).toBe(true);
   });
 
   it("reports authority boundaries rather than acting", async () => {
@@ -83,24 +85,26 @@ describe("failure cases", () => {
     expect(challenge).toMatch(/^Bearer resource_metadata="http:\/\/127\.0\.0\.1:\d+\/\.well-known\/oauth-protected-resource"/);
     expect(challenge).toContain('error="insufficient_scope"');
     expect(challenge).toContain("error_description=");
-    expect(res._meta["mirrornode/receipt"].outcome).toBe("DENIED");
+    expect(res.structuredContent).toMatchObject({ outcome: "unavailable", completeness: "not-applicable", reason_codes: ["SOURCE_UNREADABLE"], result: null });
+    expect(res._meta["mirrornode/receipt"].outcome).toBe("unavailable");
   });
 
   it("rejects extra properties and malformed ids before touching data", async () => {
     const c = await h.client(await h.token(ALL_SCOPES));
     const extra: any = await c.callTool({ name: "lattice_get_record", arguments: { record_id: "REC-SYN-001", include_secrets: true } });
     expect(extra.isError).toBe(true);
-    expect(extra._meta["mirrornode/receipt"].outcome).toBe("INVALID_INPUT");
+    expect(extra.structuredContent).toMatchObject({ outcome: "unsupported", completeness: "not-applicable", reason_codes: ["SCHEMA_UNSUPPORTED"], result: null });
     const bad: any = await c.callTool({ name: "lattice_get_record", arguments: { record_id: "../../etc/passwd" } });
     expect(bad.isError).toBe(true);
-    expect(bad._meta["mirrornode/receipt"].outcome).toBe("INVALID_INPUT");
+    expect(bad.structuredContent.reason_codes).toEqual(["SCHEMA_UNSUPPORTED"]);
+    expect(bad.content[0].text).not.toContain("passwd");
   });
 
   it("returns NOT_FOUND for unknown ids and an MCP error for unknown tools", async () => {
     const c = await h.client(await h.token(ALL_SCOPES));
     const nf: any = await c.callTool({ name: "ptah_get_readiness", arguments: { component_id: "CMP-NOPE" } });
     expect(nf.isError).toBe(true);
-    expect(nf._meta["mirrornode/receipt"].outcome).toBe("NOT_FOUND");
+    expect(nf.structuredContent).toMatchObject({ outcome: "unavailable", completeness: "not-applicable", reason_codes: ["SOURCE_MISSING"], result: null });
     await expect(c.callTool({ name: "ptah_deploy", arguments: {} })).rejects.toThrow(/Unknown tool/);
   });
 
@@ -109,12 +113,12 @@ describe("failure cases", () => {
     const r: any = await a.callTool({ name: "theia_get_workstream_status", arguments: {} });
     const id = r.structuredContent.receipt.receipt_id;
     const b = await h.client(await h.token(ALL_SCOPES, "user-b"));
-    const lookup: any = await b.callTool({ name: "lattice_verify_receipts", arguments: { receipt_id: id } });
+    const lookup: any = await b.callTool({ name: "lattice_check_receipt_chain", arguments: { receipt_id: id } });
     expect(lookup.isError).toBe(true);
-    const mine: any = await b.callTool({ name: "lattice_verify_receipts", arguments: {} });
+    const mine: any = await b.callTool({ name: "lattice_check_receipt_chain", arguments: {} });
     expect(mine.structuredContent.result.receipts.map((x: any) => x.receipt_id)).not.toContain(id);
-    expect(mine.structuredContent.result.chain.valid).toBe(true);
-    const own: any = await a.callTool({ name: "lattice_verify_receipts", arguments: { receipt_id: id } });
+    expect(mine.structuredContent.result.chain.hash_chain_consistent).toBe(true);
+    const own: any = await a.callTool({ name: "lattice_check_receipt_chain", arguments: { receipt_id: id } });
     expect(own.structuredContent.result.receipts).toHaveLength(1);
   });
 
@@ -125,5 +129,33 @@ describe("failure cases", () => {
     const serialized = JSON.stringify(h.suite.ledger.all());
     expect(serialized).not.toContain(token);
     expect(serialized).not.toContain("very-identifiable-subject");
+  });
+});
+
+describe("CG-0032 §12 failure mapping", () => {
+  it("reports INTEGRITY_MISMATCH with outcome failed when a stored receipt is altered", async () => {
+    const hh = await startHarness();
+    try {
+      const c = await hh.client(await hh.token(ALL_SCOPES));
+      await c.callTool({ name: "theia_get_workstream_status", arguments: {} });
+      await c.callTool({ name: "theia_get_workstream_status", arguments: {} });
+      (hh.suite.ledger.all()[0] as any).tool = "altered";
+      const res: any = await c.callTool({ name: "lattice_check_receipt_chain", arguments: {} });
+      expect(res.isError).toBe(true);
+      expect(res.structuredContent).toMatchObject({ outcome: "failed", completeness: "complete", reason_codes: ["INTEGRITY_MISMATCH"] });
+      expect(res.structuredContent.result.chain).toMatchObject({ hash_chain_consistent: false, first_mismatch_sequence: 1 });
+    } finally { await hh.close(); }
+  });
+
+  it("reports MCP_INTERNAL_ERROR without leaking details when a handler throws", async () => {
+    const t = TOOLS.find((x) => x.name === "lattice_list_contradictions")!;
+    const original = t.handler;
+    t.handler = () => { throw new Error("/secret/path/should/not/leak"); };
+    try {
+      const c = await h.client(await h.token(ALL_SCOPES));
+      const res: any = await c.callTool({ name: "lattice_list_contradictions", arguments: {} });
+      expect(res.structuredContent).toMatchObject({ outcome: "unavailable", completeness: "not-applicable", reason_codes: ["MCP_INTERNAL_ERROR"], result: null });
+      expect(JSON.stringify(res)).not.toContain("secret/path");
+    } finally { t.handler = original; }
   });
 });

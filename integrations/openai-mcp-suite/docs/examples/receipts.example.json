@@ -5,8 +5,9 @@
       "mirrornode/receipt": {
         "tool": "thoth_get_disposition",
         "node": "THOTH",
-        "outcome": "OK",
-        "subject_sha256": "c10cf4a4b4f6be9b9165dca918852e451a824a7302e0f91979153fd9482b6cfe",
+        "outcome": "success",
+        "reason_codes": [],
+        "subject_sha256": "ee442cf63860bd790b0d7e046817b236414953e9eab295a556e9301f1bd56e5d",
         "client_id": "synthetic-client",
         "scopes_granted": [
           "suite:lattice.read",
@@ -16,27 +17,30 @@
         ],
         "scope_required": "suite:thoth.read",
         "input_sha256": "cbf715e7340a982a1b99ac8f87299cc64d75d27d614a3f9c1511f37cdc558b7b",
-        "output_sha256": "4e9283e8d52f696166eb4eb891a74b444b047ba37755e2ec03d05556e0e8e982",
+        "output_sha256": "a592491862f30d8ffbd3cd345f5ae95932074858880d056ca721f72bdecde5f8",
         "fixture_set": "mn-suite-synthetic-v0.1",
         "fixture_sha256": "9025a2cc6e5563306bc7ee942898c814643bf12a384f29793b9d3a2c31f47c5d",
         "data_classification": "SYNTHETIC",
-        "receipt_id": "rcpt_0aede5d8-f634-4e37-94ba-d28c998bba9d",
+        "receipt_id": "rcpt_48eb8838-31ea-42dd-b927-dacd02dff9ad",
         "sequence": 1,
-        "invoked_at": "2026-11-18T18:39:18.383Z",
+        "invoked_at": "2026-11-18T18:43:34.120Z",
         "prev_receipt_sha256": null,
-        "receipt_sha256": "37f104088dced7c7cb759f9bc62d4a246baf465f53d5852c69e5449b51961660"
+        "receipt_sha256": "a29fcadce98c725c5ac3d438d48e76d1dbdcb83914ff4eaad3c805449adab866"
       }
     },
     "content": [
       {
         "type": "text",
-        "text": "[SYNTHETIC] FND-SYN-001: HOLD. Receipt rcpt_0aede5d8-f634-4e37-94ba-d28c998bba9d."
+        "text": "[SYNTHETIC] FND-SYN-001: HOLD. Receipt rcpt_48eb8838-31ea-42dd-b927-dacd02dff9ad."
       }
     ],
     "structuredContent": {
       "node": "THOTH",
       "data_classification": "SYNTHETIC",
       "fixture_set": "mn-suite-synthetic-v0.1",
+      "outcome": "success",
+      "completeness": "complete",
+      "reason_codes": [],
       "result": {
         "finding_id": "FND-SYN-001",
         "severity": "HIGH",
@@ -53,19 +57,23 @@
         "verdict_issued_by_this_tool": false
       },
       "receipt": {
-        "receipt_id": "rcpt_0aede5d8-f634-4e37-94ba-d28c998bba9d",
+        "receipt_id": "rcpt_48eb8838-31ea-42dd-b927-dacd02dff9ad",
         "sequence": 1,
-        "receipt_sha256": "37f104088dced7c7cb759f9bc62d4a246baf465f53d5852c69e5449b51961660"
+        "receipt_sha256": "a29fcadce98c725c5ac3d438d48e76d1dbdcb83914ff4eaad3c805449adab866"
       }
-    }
+    },
+    "isError": false
   },
   "not_found_call": {
     "_meta": {
       "mirrornode/receipt": {
         "tool": "ptah_get_readiness",
         "node": "PTAH",
-        "outcome": "NOT_FOUND",
-        "subject_sha256": "c10cf4a4b4f6be9b9165dca918852e451a824a7302e0f91979153fd9482b6cfe",
+        "outcome": "unavailable",
+        "reason_codes": [
+          "SOURCE_MISSING"
+        ],
+        "subject_sha256": "ee442cf63860bd790b0d7e046817b236414953e9eab295a556e9301f1bd56e5d",
         "client_id": "synthetic-client",
         "scopes_granted": [
           "suite:lattice.read",
@@ -75,23 +83,39 @@
         ],
         "scope_required": "suite:ptah.read",
         "input_sha256": "3d16f2a032ca561a629dcd6af27c4d447e7e14339f90b51b08a262210fbadab0",
-        "output_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+        "output_sha256": "8abff3b695ea567f43c59ad87d72289adb06e33447f36be92ea9e345dd26c173",
         "fixture_set": "mn-suite-synthetic-v0.1",
         "fixture_sha256": "9025a2cc6e5563306bc7ee942898c814643bf12a384f29793b9d3a2c31f47c5d",
         "data_classification": "SYNTHETIC",
-        "receipt_id": "rcpt_a8f3db90-3f6e-4b4a-a4ad-167470e575ee",
+        "receipt_id": "rcpt_1aad4cca-db29-4081-bdac-4f4aeec7714d",
         "sequence": 2,
-        "invoked_at": "2026-11-18T18:39:18.393Z",
-        "prev_receipt_sha256": "37f104088dced7c7cb759f9bc62d4a246baf465f53d5852c69e5449b51961660",
-        "receipt_sha256": "c153ccdc8c8295bbb6fa8bfe580f0119a7d8af2c99b10596a39a0450fb6fbe6c"
+        "invoked_at": "2026-11-18T18:43:34.127Z",
+        "prev_receipt_sha256": "a29fcadce98c725c5ac3d438d48e76d1dbdcb83914ff4eaad3c805449adab866",
+        "receipt_sha256": "f48d88b46ca8c1f825b07e07ba4a96d7ac57196350e65778f519fa0a258ab3a9"
       }
     },
     "content": [
       {
         "type": "text",
-        "text": "No synthetic component with id CMP-SYN-MISSING. Receipt rcpt_a8f3db90-3f6e-4b4a-a4ad-167470e575ee."
+        "text": "[SYNTHETIC] No synthetic component with id CMP-SYN-MISSING. Receipt rcpt_1aad4cca-db29-4081-bdac-4f4aeec7714d."
       }
     ],
+    "structuredContent": {
+      "node": "PTAH",
+      "data_classification": "SYNTHETIC",
+      "fixture_set": "mn-suite-synthetic-v0.1",
+      "outcome": "unavailable",
+      "completeness": "not-applicable",
+      "reason_codes": [
+        "SOURCE_MISSING"
+      ],
+      "result": null,
+      "receipt": {
+        "receipt_id": "rcpt_1aad4cca-db29-4081-bdac-4f4aeec7714d",
+        "sequence": 2,
+        "receipt_sha256": "f48d88b46ca8c1f825b07e07ba4a96d7ac57196350e65778f519fa0a258ab3a9"
+      }
+    },
     "isError": true
   },
   "denied_call": {
@@ -102,40 +126,60 @@
       "mirrornode/receipt": {
         "tool": "thoth_list_findings",
         "node": "THOTH",
-        "outcome": "DENIED",
-        "subject_sha256": "c10cf4a4b4f6be9b9165dca918852e451a824a7302e0f91979153fd9482b6cfe",
+        "outcome": "unavailable",
+        "reason_codes": [
+          "SOURCE_UNREADABLE"
+        ],
+        "subject_sha256": "ee442cf63860bd790b0d7e046817b236414953e9eab295a556e9301f1bd56e5d",
         "client_id": "synthetic-client",
         "scopes_granted": [
           "suite:theia.read"
         ],
         "scope_required": "suite:thoth.read",
         "input_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-        "output_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+        "output_sha256": "1df49a82b34c210443ea4ba31ac90c01bc61fb752ebfee45804892e0bd1b36d1",
         "fixture_set": "mn-suite-synthetic-v0.1",
         "fixture_sha256": "9025a2cc6e5563306bc7ee942898c814643bf12a384f29793b9d3a2c31f47c5d",
         "data_classification": "SYNTHETIC",
-        "receipt_id": "rcpt_8e14111b-34d7-44dc-aa4a-b86db1b0fb2e",
+        "receipt_id": "rcpt_8bc6dfca-0003-4a5d-9d73-02ecade8cb09",
         "sequence": 3,
-        "invoked_at": "2026-11-18T18:39:18.415Z",
-        "prev_receipt_sha256": "c153ccdc8c8295bbb6fa8bfe580f0119a7d8af2c99b10596a39a0450fb6fbe6c",
-        "receipt_sha256": "702cd654aeccabc206f93a23620ef07a45307946896e0a6050e8cedb6ca1a472"
+        "invoked_at": "2026-11-18T18:43:34.141Z",
+        "prev_receipt_sha256": "f48d88b46ca8c1f825b07e07ba4a96d7ac57196350e65778f519fa0a258ab3a9",
+        "receipt_sha256": "d95812faa4074037f6959670a71daeeea402e976f7ba93cdad1971f7e4b39353"
       }
     },
     "content": [
       {
         "type": "text",
-        "text": "This tool needs the suite:thoth.read permission, which the current sign-in does not grant. Receipt rcpt_8e14111b-34d7-44dc-aa4a-b86db1b0fb2e."
+        "text": "[SYNTHETIC] This tool needs the suite:thoth.read permission, which the current sign-in does not grant. Receipt rcpt_8bc6dfca-0003-4a5d-9d73-02ecade8cb09."
       }
     ],
+    "structuredContent": {
+      "node": "THOTH",
+      "data_classification": "SYNTHETIC",
+      "fixture_set": "mn-suite-synthetic-v0.1",
+      "outcome": "unavailable",
+      "completeness": "not-applicable",
+      "reason_codes": [
+        "SOURCE_UNREADABLE"
+      ],
+      "result": null,
+      "receipt": {
+        "receipt_id": "rcpt_8bc6dfca-0003-4a5d-9d73-02ecade8cb09",
+        "sequence": 3,
+        "receipt_sha256": "d95812faa4074037f6959670a71daeeea402e976f7ba93cdad1971f7e4b39353"
+      }
+    },
     "isError": true
   },
   "verify_call": {
     "_meta": {
       "mirrornode/receipt": {
-        "tool": "lattice_verify_receipts",
+        "tool": "lattice_check_receipt_chain",
         "node": "LATTICE",
-        "outcome": "OK",
-        "subject_sha256": "c10cf4a4b4f6be9b9165dca918852e451a824a7302e0f91979153fd9482b6cfe",
+        "outcome": "success",
+        "reason_codes": [],
+        "subject_sha256": "ee442cf63860bd790b0d7e046817b236414953e9eab295a556e9301f1bd56e5d",
         "client_id": "synthetic-client",
         "scopes_granted": [
           "suite:lattice.read",
@@ -145,65 +189,77 @@
         ],
         "scope_required": "suite:lattice.read",
         "input_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-        "output_sha256": "15129871e165acd6906901a03b0213b2a99cb5de31fd4447897c1a9b2a904ef6",
+        "output_sha256": "1b0dc3a7c3eef4049b2e1b7ba814991f96dc50e7423550197476201d14ebb1b5",
         "fixture_set": "mn-suite-synthetic-v0.1",
         "fixture_sha256": "9025a2cc6e5563306bc7ee942898c814643bf12a384f29793b9d3a2c31f47c5d",
         "data_classification": "SYNTHETIC",
-        "receipt_id": "rcpt_6e6909b0-f578-429c-8872-39ef1d306090",
+        "receipt_id": "rcpt_66c180a2-c8db-4bf3-b81b-f6e042515ae6",
         "sequence": 4,
-        "invoked_at": "2026-11-18T18:39:18.421Z",
-        "prev_receipt_sha256": "702cd654aeccabc206f93a23620ef07a45307946896e0a6050e8cedb6ca1a472",
-        "receipt_sha256": "8d87cf38aa1ccac74be54b1b398a10f1e1bf101350355e479b31818c29bbe768"
+        "invoked_at": "2026-11-18T18:43:34.146Z",
+        "prev_receipt_sha256": "d95812faa4074037f6959670a71daeeea402e976f7ba93cdad1971f7e4b39353",
+        "receipt_sha256": "6dad8f8b9af7932fbc6a76336ea3d12a1cf5f88b3023634e3bd8c1ecc949de9b"
       }
     },
     "content": [
       {
         "type": "text",
-        "text": "[SYNTHETIC] Receipt chain valid across 3 receipt(s); 3 listed for you. Receipt rcpt_6e6909b0-f578-429c-8872-39ef1d306090."
+        "text": "[SYNTHETIC] Receipt hash chain consistent across 3 receipt(s); 3 listed for you. Receipt rcpt_66c180a2-c8db-4bf3-b81b-f6e042515ae6."
       }
     ],
     "structuredContent": {
       "node": "LATTICE",
       "data_classification": "SYNTHETIC",
       "fixture_set": "mn-suite-synthetic-v0.1",
+      "outcome": "success",
+      "completeness": "complete",
+      "reason_codes": [],
       "result": {
         "chain": {
-          "valid": true,
+          "hash_chain_consistent": true,
           "checked": 3,
-          "first_invalid_sequence": null
+          "first_mismatch_sequence": null,
+          "semantics": "Hash and link recomputation only. Not a truth, approval or authorization claim."
         },
         "receipts": [
           {
-            "receipt_id": "rcpt_0aede5d8-f634-4e37-94ba-d28c998bba9d",
+            "receipt_id": "rcpt_48eb8838-31ea-42dd-b927-dacd02dff9ad",
             "sequence": 1,
             "tool": "thoth_get_disposition",
-            "outcome": "OK",
-            "invoked_at": "2026-11-18T18:39:18.383Z",
-            "receipt_sha256": "37f104088dced7c7cb759f9bc62d4a246baf465f53d5852c69e5449b51961660"
+            "outcome": "success",
+            "reason_codes": [],
+            "invoked_at": "2026-11-18T18:43:34.120Z",
+            "receipt_sha256": "a29fcadce98c725c5ac3d438d48e76d1dbdcb83914ff4eaad3c805449adab866"
           },
           {
-            "receipt_id": "rcpt_a8f3db90-3f6e-4b4a-a4ad-167470e575ee",
+            "receipt_id": "rcpt_1aad4cca-db29-4081-bdac-4f4aeec7714d",
             "sequence": 2,
             "tool": "ptah_get_readiness",
-            "outcome": "NOT_FOUND",
-            "invoked_at": "2026-11-18T18:39:18.393Z",
-            "receipt_sha256": "c153ccdc8c8295bbb6fa8bfe580f0119a7d8af2c99b10596a39a0450fb6fbe6c"
+            "outcome": "unavailable",
+            "reason_codes": [
+              "SOURCE_MISSING"
+            ],
+            "invoked_at": "2026-11-18T18:43:34.127Z",
+            "receipt_sha256": "f48d88b46ca8c1f825b07e07ba4a96d7ac57196350e65778f519fa0a258ab3a9"
           },
           {
-            "receipt_id": "rcpt_8e14111b-34d7-44dc-aa4a-b86db1b0fb2e",
+            "receipt_id": "rcpt_8bc6dfca-0003-4a5d-9d73-02ecade8cb09",
             "sequence": 3,
             "tool": "thoth_list_findings",
-            "outcome": "DENIED",
-            "invoked_at": "2026-11-18T18:39:18.415Z",
-            "receipt_sha256": "702cd654aeccabc206f93a23620ef07a45307946896e0a6050e8cedb6ca1a472"
+            "outcome": "unavailable",
+            "reason_codes": [
+              "SOURCE_UNREADABLE"
+            ],
+            "invoked_at": "2026-11-18T18:43:34.141Z",
+            "receipt_sha256": "d95812faa4074037f6959670a71daeeea402e976f7ba93cdad1971f7e4b39353"
           }
         ]
       },
       "receipt": {
-        "receipt_id": "rcpt_6e6909b0-f578-429c-8872-39ef1d306090",
+        "receipt_id": "rcpt_66c180a2-c8db-4bf3-b81b-f6e042515ae6",
         "sequence": 4,
-        "receipt_sha256": "8d87cf38aa1ccac74be54b1b398a10f1e1bf101350355e479b31818c29bbe768"
+        "receipt_sha256": "6dad8f8b9af7932fbc6a76336ea3d12a1cf5f88b3023634e3bd8c1ecc949de9b"
       }
-    }
+    },
+    "isError": false
   }
 }

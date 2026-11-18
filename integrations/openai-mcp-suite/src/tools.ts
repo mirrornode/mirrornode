@@ -9,11 +9,19 @@ export interface ToolContext {
   fx: Fixtures;
   subjectSha256: string;
   receiptsForSubject: () => Receipt[];
-  verifyChain: () => { valid: boolean; checked: number; first_invalid_sequence: number | null };
+  verifyChain: () => { consistent: boolean; checked: number; first_mismatch_sequence: number | null };
 }
+/** CG-0032 §12 outcome vocabulary and reason codes. */
+export type Outcome = "success" | "partial" | "unavailable" | "failed" | "unsupported";
+export type Completeness = "complete" | "partial" | "not-applicable";
+export type ReasonCode = "SOURCE_MISSING" | "SOURCE_UNREADABLE" | "SOURCE_MALFORMED" | "SCHEMA_UNSUPPORTED" | "INTEGRITY_MISMATCH" | "SCAN_INCOMPLETE" | "SOURCE_STALE" | "MCP_INTERNAL_ERROR";
+export const OUTCOMES = ["success", "partial", "unavailable", "failed", "unsupported"] as const;
+export const COMPLETENESS = ["complete", "partial", "not-applicable"] as const;
+export const REASON_CODES = ["SOURCE_MISSING", "SOURCE_UNREADABLE", "SOURCE_MALFORMED", "SCHEMA_UNSUPPORTED", "INTEGRITY_MISMATCH", "SCAN_INCOMPLETE", "SOURCE_STALE", "MCP_INTERNAL_ERROR"] as const;
+
 export type HandlerResult =
-  | { ok: true; result: unknown; text: string }
-  | { ok: false; outcome: "NOT_FOUND"; message: string };
+  | { ok: true; result: unknown; text: string; outcome?: Outcome; completeness?: Completeness; reason_codes?: ReasonCode[] }
+  | { ok: false; outcome: Outcome; completeness: Completeness; reason_codes: ReasonCode[]; message: string };
 
 export interface ToolDef {
   name: string;
@@ -28,8 +36,8 @@ export interface ToolDef {
 
 const Id = (prefix: string) => z.string().regex(new RegExp(`^${prefix}-[A-Z0-9-]{1,40}$`)).describe(`Identifier starting with ${prefix}-`);
 const Evidence = z.enum(["OBSERVED", "REPORTED", "INFERRED", "BLOCKED", "UNKNOWN"]);
-const GateOut = z.object({ id: z.string(), description: z.string(), owner_role: z.string(), state: z.enum(["OPEN", "CLOSED"]), evidence_class: Evidence, evidence_ref: z.string().nullable() });
-const ActionOut = z.object({
+const GateOut = z.strictObject({ id: z.string(), description: z.string(), owner_role: z.string(), state: z.enum(["OPEN", "CLOSED"]), evidence_class: Evidence, evidence_ref: z.string().nullable() });
+const ActionOut = z.strictObject({
   id: z.string(), description: z.string(), required_authority: z.string(), reversible: z.boolean(),
   blocked_by_open_gates: z.array(z.string()),
   state: z.enum(["UNBLOCKED", "BLOCKED"]),
@@ -38,7 +46,7 @@ const ActionOut = z.object({
 });
 const DispositionStatus = z.enum(["HOLD", "CLEARED", "CLEARED_WITH_CONDITIONS", "PENDING_THOTH_REVIEW"]);
 
-const notFound = (what: string, id: string): HandlerResult => ({ ok: false, outcome: "NOT_FOUND", message: `No synthetic ${what} with id ${id}.` });
+const notFound = (what: string, id: string): HandlerResult => ({ ok: false, outcome: "unavailable", completeness: "not-applicable", reason_codes: ["SOURCE_MISSING"], message: `No synthetic ${what} with id ${id}.` });
 
 function actionsFor(fx: Fixtures, wsId: string) {
   const ws = fx.workstreams.find((w) => w.id === wsId)!;
@@ -60,7 +68,7 @@ function dispositionOf(f: Fixtures["findings"][number]) {
     ? { status: f.disposition.status as z.infer<typeof DispositionStatus>, recorded_by: f.disposition.recorded_by, recorded_at: f.disposition.recorded_at, clearance_requirements: f.disposition.clearance_requirements }
     : { status: "PENDING_THOTH_REVIEW" as const, recorded_by: null, recorded_at: null, clearance_requirements: ["THOTH review has not been recorded"] };
 }
-const DispositionOut = z.object({ status: DispositionStatus, recorded_by: z.string().nullable(), recorded_at: z.string().nullable(), clearance_requirements: z.array(z.string()) });
+const DispositionOut = z.strictObject({ status: DispositionStatus, recorded_by: z.string().nullable(), recorded_at: z.string().nullable(), clearance_requirements: z.array(z.string()) });
 
 export const TOOLS: ToolDef[] = [
   {
@@ -68,8 +76,8 @@ export const TOOLS: ToolDef[] = [
     title: "Get workstream status",
     node: "THEIA", scope: SCOPES.THEIA,
     description: "Use this to read the current status and gates of a MIRRORNODE workstream from the synthetic fixture set. Returns each gate with its owner role, open/closed state and evidence class. Read-only; it changes nothing.",
-    input: z.object({ workstream_id: Id("WS").optional().describe("Workstream id. Omit to list all workstreams.") }).strict(),
-    result: z.object({ workstreams: z.array(z.object({ id: z.string(), title: z.string(), status: z.string(), summary: z.string(), gates: z.array(GateOut), open_gate_count: z.number().int() })) }),
+    input: z.strictObject({ workstream_id: Id("WS").optional().describe("Workstream id. Omit to list all workstreams.") } ),
+    result: z.strictObject({ workstreams: z.array(z.strictObject({ id: z.string(), title: z.string(), status: z.string(), summary: z.string(), gates: z.array(GateOut), open_gate_count: z.number().int() })) }),
     handler: ({ fx }, { workstream_id }) => {
       const list = workstream_id ? fx.workstreams.filter((w) => w.id === workstream_id) : fx.workstreams;
       if (workstream_id && !list.length) return notFound("workstream", workstream_id);
@@ -82,8 +90,8 @@ export const TOOLS: ToolDef[] = [
     title: "List next actions",
     node: "THEIA", scope: SCOPES.THEIA,
     description: "Use this to see which next actions on a workstream are unblocked or blocked by open gates, and which need Operator approval. It reports status only: it grants no authorization and executes nothing.",
-    input: z.object({ workstream_id: Id("WS") }).strict(),
-    result: z.object({ workstream_id: z.string(), actions: z.array(ActionOut) }),
+    input: z.strictObject({ workstream_id: Id("WS") } ),
+    result: z.strictObject({ workstream_id: z.string(), actions: z.array(ActionOut) }),
     handler: ({ fx }, { workstream_id }) => {
       if (!fx.workstreams.some((w) => w.id === workstream_id)) return notFound("workstream", workstream_id);
       const actions = actionsFor(fx, workstream_id);
@@ -95,9 +103,9 @@ export const TOOLS: ToolDef[] = [
     title: "Build handoff record",
     node: "THEIA", scope: SCOPES.THEIA,
     description: "Use this to assemble a structured handoff record for a workstream addressed to one node or the Operator. The record is returned to you as a draft; this tool does not send, store or deliver it anywhere.",
-    input: z.object({ workstream_id: Id("WS"), to: z.enum(["THEIA", "PTAH", "THOTH", "LATTICE", "OPERATOR"]) }).strict(),
-    result: z.object({
-      handoff: z.object({
+    input: z.strictObject({ workstream_id: Id("WS"), to: z.enum(["THEIA", "PTAH", "THOTH", "LATTICE", "OPERATOR"]) } ),
+    result: z.strictObject({
+      handoff: z.strictObject({
         status: z.literal("DRAFT_NOT_SENT"), from: z.literal("THEIA"), to: z.string(), workstream_id: z.string(),
         open_gates: z.array(GateOut), unblocked_actions: z.array(ActionOut), blocked_actions: z.array(ActionOut),
         evidence_counts: z.record(z.string(), z.number().int()),
@@ -124,12 +132,12 @@ export const TOOLS: ToolDef[] = [
     title: "Get implementation readiness",
     node: "PTAH", scope: SCOPES.PTAH,
     description: "Use this to summarize implementation readiness of a synthetic component: its readiness label, the evidence behind each claim and its open findings with their recorded security status. Read-only.",
-    input: z.object({ component_id: Id("CMP") }).strict(),
-    result: z.object({
+    input: z.strictObject({ component_id: Id("CMP") } ),
+    result: z.strictObject({
       component_id: z.string(), title: z.string(), readiness: z.string(),
-      evidence: z.array(z.object({ claim: z.string(), evidence_class: Evidence, ref: z.string() })),
+      evidence: z.array(z.strictObject({ claim: z.string(), evidence_class: Evidence, ref: z.string() })),
       unverified_claims: z.array(z.string()),
-      open_findings: z.array(z.object({ id: z.string(), severity: z.string(), title: z.string(), disposition_status: DispositionStatus })),
+      open_findings: z.array(z.strictObject({ id: z.string(), severity: z.string(), title: z.string(), disposition_status: DispositionStatus })),
     }),
     handler: ({ fx }, { component_id }) => {
       const c = fx.components.find((x) => x.id === component_id);
@@ -145,10 +153,10 @@ export const TOOLS: ToolDef[] = [
     title: "Propose bounded repair",
     node: "PTAH", scope: SCOPES.PTAH,
     description: "Use this to get the bounded repair proposal on file for a synthetic finding: files in scope, required tests, rollback and the approvals it needs. The proposal is text only; this tool applies no change.",
-    input: z.object({ finding_id: Id("FND") }).strict(),
-    result: z.object({
+    input: z.strictObject({ finding_id: Id("FND") } ),
+    result: z.strictObject({
       finding_id: z.string(),
-      proposal: z.object({
+      proposal: z.strictObject({
         status: z.literal("PROPOSED_NOT_APPLIED"), summary: z.string(), files_in_scope: z.array(z.string()),
         tests_required: z.array(z.string()), rollback: z.string(), required_approvals: z.array(z.string()),
       }).nullable(),
@@ -170,11 +178,11 @@ export const TOOLS: ToolDef[] = [
     title: "List security findings",
     node: "THOTH", scope: SCOPES.THOTH,
     description: "Use this to list synthetic security findings, optionally filtered by severity or recorded disposition status. Findings without a recorded THOTH disposition are reported as PENDING_THOTH_REVIEW. Read-only.",
-    input: z.object({
+    input: z.strictObject({
       severity: z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]).optional(),
       disposition_status: DispositionStatus.optional(),
-    }).strict(),
-    result: z.object({ findings: z.array(z.object({ id: z.string(), severity: z.string(), component_id: z.string(), title: z.string(), evidence_class: Evidence, disposition_status: DispositionStatus })), holds: z.array(z.string()) }),
+    } ),
+    result: z.strictObject({ findings: z.array(z.strictObject({ id: z.string(), severity: z.string(), component_id: z.string(), title: z.string(), evidence_class: Evidence, disposition_status: DispositionStatus })), holds: z.array(z.string()) }),
     handler: ({ fx }, { severity, disposition_status }) => {
       const findings = fx.findings.map((f) => ({ id: f.id, severity: f.severity, component_id: f.component_id, title: f.title, evidence_class: f.evidence_class, disposition_status: dispositionOf(f).status }))
         .filter((f) => (!severity || f.severity === severity) && (!disposition_status || f.disposition_status === disposition_status));
@@ -187,8 +195,8 @@ export const TOOLS: ToolDef[] = [
     title: "Get security disposition",
     node: "THOTH", scope: SCOPES.THOTH,
     description: "Use this to read the recorded security disposition and clearance requirements for one synthetic finding. It reports what is recorded and never issues a new security verdict.",
-    input: z.object({ finding_id: Id("FND") }).strict(),
-    result: z.object({ finding_id: z.string(), severity: z.string(), title: z.string(), disposition: DispositionOut, verdict_issued_by_this_tool: z.literal(false) }),
+    input: z.strictObject({ finding_id: Id("FND") } ),
+    result: z.strictObject({ finding_id: z.string(), severity: z.string(), title: z.string(), disposition: DispositionOut, verdict_issued_by_this_tool: z.literal(false) }),
     handler: ({ fx }, { finding_id }) => {
       const f = fx.findings.find((x) => x.id === finding_id);
       if (!f) return notFound("finding", finding_id);
@@ -200,17 +208,17 @@ export const TOOLS: ToolDef[] = [
     name: "lattice_get_record",
     title: "Get source-of-truth record",
     node: "LATTICE", scope: SCOPES.LATTICE,
-    description: "Use this to retrieve one synthetic source-of-truth record with its provenance (evidence class, source reference, who recorded it and when) and any contradictions that involve it. Read-only.",
-    input: z.object({ record_id: Id("REC") }).strict(),
-    result: z.object({
-      record: z.object({ id: z.string(), title: z.string(), value: z.string(), provenance: z.object({ evidence_class: Evidence, source_ref: z.string(), recorded_at: z.string(), recorded_by: z.string() }) }),
-      contradictions: z.array(z.object({ id: z.string(), description: z.string(), status: z.string(), resolution_owner: z.string(), record_ids: z.array(z.string()) })),
+    description: "Use this to retrieve one synthetic source-of-truth record with its attribution (evidence class, cited source, who recorded it and when) and any contradictions that involve it. Attribution says where a record says it came from; it does not establish that the record is true or approved. Read-only.",
+    input: z.strictObject({ record_id: Id("REC") } ),
+    result: z.strictObject({
+      record: z.strictObject({ id: z.string(), title: z.string(), value: z.string(), attribution: z.strictObject({ evidence_class: Evidence, source_ref: z.string(), recorded_at: z.string(), recorded_by: z.string() }) }),
+      contradictions: z.array(z.strictObject({ id: z.string(), description: z.string(), status: z.string(), resolution_owner: z.string(), record_ids: z.array(z.string()) })),
     }),
     handler: ({ fx }, { record_id }) => {
       const r = fx.records.find((x) => x.id === record_id);
       if (!r) return notFound("record", record_id);
       const contradictions = fx.contradictions.filter((c) => c.record_ids.includes(record_id));
-      return { ok: true, result: { record: { id: r.id, title: r.title, value: r.value, provenance: { evidence_class: r.evidence_class, source_ref: r.source_ref, recorded_at: r.recorded_at, recorded_by: r.recorded_by } }, contradictions }, text: `${r.id}: ${r.value} (${r.evidence_class})${contradictions.length ? `; contradicted in ${contradictions.map((c) => c.id).join(", ")}` : ""}.` };
+      return { ok: true, result: { record: { id: r.id, title: r.title, value: r.value, attribution: { evidence_class: r.evidence_class, source_ref: r.source_ref, recorded_at: r.recorded_at, recorded_by: r.recorded_by } }, contradictions }, text: `${r.id}: ${r.value} (${r.evidence_class})${contradictions.length ? `; contradicted in ${contradictions.map((c) => c.id).join(", ")}` : ""}.` };
     },
   },
   {
@@ -218,8 +226,8 @@ export const TOOLS: ToolDef[] = [
     title: "List contradictions",
     node: "LATTICE", scope: SCOPES.LATTICE,
     description: "Use this to list contradictions between synthetic source-of-truth records, with both sides and who owns the resolution. It does not resolve or overwrite either record.",
-    input: z.object({ status: z.enum(["UNRESOLVED", "RESOLVED"]).optional() }).strict(),
-    result: z.object({ contradictions: z.array(z.object({ id: z.string(), description: z.string(), status: z.string(), resolution_owner: z.string(), sides: z.array(z.object({ record_id: z.string(), value: z.string(), evidence_class: Evidence, source_ref: z.string() })) })) }),
+    input: z.strictObject({ status: z.enum(["UNRESOLVED", "RESOLVED"]).optional() } ),
+    result: z.strictObject({ contradictions: z.array(z.strictObject({ id: z.string(), description: z.string(), status: z.string(), resolution_owner: z.string(), sides: z.array(z.strictObject({ record_id: z.string(), value: z.string(), evidence_class: Evidence, source_ref: z.string() })) })) }),
     handler: ({ fx }, { status }) => {
       const contradictions = fx.contradictions.filter((c) => !status || c.status === status).map((c) => ({
         id: c.id, description: c.description, status: c.status, resolution_owner: c.resolution_owner,
@@ -230,21 +238,28 @@ export const TOOLS: ToolDef[] = [
     },
   },
   {
-    name: "lattice_verify_receipts",
-    title: "Verify evidence receipts",
+    name: "lattice_check_receipt_chain",
+    title: "Check receipt hash chain",
     node: "LATTICE", scope: SCOPES.LATTICE,
-    description: "Use this to verify the hash chain of evidence receipts on this server and list the receipts created for the current signed-in user. Other users' receipts are counted in the chain check but never listed.",
-    input: z.object({ receipt_id: z.string().regex(/^rcpt_[0-9a-f-]{36}$/).optional() }).strict(),
-    result: z.object({
-      chain: z.object({ valid: z.boolean(), checked: z.number().int(), first_invalid_sequence: z.number().int().nullable() }),
-      receipts: z.array(z.object({ receipt_id: z.string(), sequence: z.number().int(), tool: z.string(), outcome: z.string(), invoked_at: z.string(), receipt_sha256: z.string() })),
+    description: "Use this to recompute the hash chain of evidence receipts on this server and list receipts created for the current signed-in user. A consistent chain means each stored receipt matches its recorded hash and link; it does not establish that any result was true, approved or authorized. Other users' receipts are counted but never listed.",
+    input: z.strictObject({ receipt_id: z.string().regex(/^rcpt_[0-9a-f-]{36}$/).optional() }),
+    result: z.strictObject({
+      chain: z.strictObject({
+        hash_chain_consistent: z.boolean(), checked: z.number().int(), first_mismatch_sequence: z.number().int().nullable(),
+        semantics: z.literal("Hash and link recomputation only. Not a truth, approval or authorization claim."),
+      }),
+      receipts: z.array(z.strictObject({ receipt_id: z.string(), sequence: z.number().int(), tool: z.string(), outcome: z.enum(OUTCOMES), reason_codes: z.array(z.enum(REASON_CODES)), invoked_at: z.string(), receipt_sha256: z.string() })),
     }),
     handler: ({ receiptsForSubject, verifyChain }, { receipt_id }) => {
       const mine = receiptsForSubject().filter((r) => !receipt_id || r.receipt_id === receipt_id);
       if (receipt_id && !mine.length) return notFound("receipt for this user", receipt_id);
-      const chain = verifyChain();
-      const receipts = mine.map((r) => ({ receipt_id: r.receipt_id, sequence: r.sequence, tool: r.tool, outcome: r.outcome, invoked_at: r.invoked_at, receipt_sha256: r.receipt_sha256 }));
-      return { ok: true, result: { chain, receipts }, text: `Receipt chain ${chain.valid ? "valid" : "BROKEN"} across ${chain.checked} receipt(s); ${receipts.length} listed for you.` };
+      const v = verifyChain();
+      const chain = { hash_chain_consistent: v.consistent, checked: v.checked, first_mismatch_sequence: v.first_mismatch_sequence, semantics: "Hash and link recomputation only. Not a truth, approval or authorization claim." as const };
+      const receipts = mine.map((r) => ({ receipt_id: r.receipt_id, sequence: r.sequence, tool: r.tool, outcome: r.outcome, reason_codes: r.reason_codes, invoked_at: r.invoked_at, receipt_sha256: r.receipt_sha256 }));
+      const text = `Receipt hash chain ${v.consistent ? "consistent" : "MISMATCH"} across ${v.checked} receipt(s); ${receipts.length} listed for you.`;
+      return v.consistent
+        ? { ok: true, result: { chain, receipts }, text }
+        : { ok: true, result: { chain, receipts }, text, outcome: "failed", completeness: "complete", reason_codes: ["INTEGRITY_MISMATCH"] };
     },
   },
 ];
