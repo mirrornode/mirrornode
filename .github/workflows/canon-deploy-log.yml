@@ -46,7 +46,16 @@ jobs:
               deployment_status_id: env.DEPLOYMENT_STATUS_ID
             }
           }' > "$payload_file"
-          curl --fail-with-body --silent --show-error --connect-timeout 10 --max-time 30 \
+          # Reject redirects explicitly. A 3xx response is not an accepted log event.
+          if ! http_status="$(curl --silent --show-error --connect-timeout 10 --max-time 30 \
+            --output /dev/null --write-out '%{http_code}' \
             -X POST https://mirrornode.vercel.app/events/log \
             -H "Content-Type: application/json" \
-            --data-binary "@$payload_file"
+            --data-binary "@$payload_file")"; then
+            echo "::error::Canon deploy log transport failed; no delivery confirmed."
+            exit 1
+          fi
+          case "$http_status" in
+            2??) echo "Canon deploy log endpoint accepted request (HTTP $http_status)." ;;
+            *) echo "::error::Canon deploy log endpoint returned HTTP $http_status; no delivery confirmed."; exit 1 ;;
+          esac
