@@ -82,13 +82,17 @@ jobs:
           $(git log --oneline --since='7 days ago' || true)
           EOF
 
+      - name: Package audit evidence for artifact upload
+        run: |
+          # Dossier filenames contain colons, which upload-artifact rejects as paths.
+          # Archiving preserves the original filenames without exposing them to the uploader.
+          tar -czf "$RUNNER_TEMP/weekly-canon-audit.tar.gz" -C "$GITHUB_WORKSPACE" vault/weekly canon/dossiers
+
       - name: Preserve generated audit evidence
         uses: actions/upload-artifact@v4
         with:
           name: weekly-canon-audit-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            vault/weekly/
-            canon/dossiers/
+          path: ${{ runner.temp }}/weekly-canon-audit.tar.gz
           if-no-files-found: error
           retention-days: 30
 
