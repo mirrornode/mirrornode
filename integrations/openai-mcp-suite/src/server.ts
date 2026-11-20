@@ -3,12 +3,13 @@ import express, { type Request, type Response, type NextFunction } from "express
 import { z } from "zod/v4";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { CallToolRequestSchema, ListToolsRequestSchema, ErrorCode, McpError, type CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, ErrorCode, McpError, type CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
+import { loadWidgets, WIDGET_MIME, WIDGET_META } from "./widgets.js";
 import { loadFixtures, type LoadedFixtures } from "./fixtures.js";
 import { ReceiptLedger, canonicalJson, sha256, type Receipt } from "./receipts.js";
 import { AuthError, protectedResourceMetadata, verifyBearer, wwwAuthenticate, type AuthConfig } from "./auth.js";
-import { TOOLS, OUTCOMES, COMPLETENESS, REASON_CODES, type ToolDef, type Outcome, type Completeness, type ReasonCode } from "./tools.js";
+import { ALL_TOOLS as TOOLS, OUTCOMES, COMPLETENESS, REASON_CODES, type ToolDef, type Outcome, type Completeness, type ReasonCode } from "./tools.js";
 
 export const SERVER_NAME = "mirrornode-suite-synthetic";
 export const SERVER_VERSION = "0.1.0";
@@ -41,7 +42,8 @@ export function toolDescriptors() {
       outputSchema: jsonSchema(envelopeSchema(t)),
       annotations: { title: t.title, readOnlyHint: true, destructiveHint: false, openWorldHint: false, idempotentHint: true },
       securitySchemes,
-      _meta: { securitySchemes },
+      // Only render tools link a widget (MCP Apps `_meta.ui.resourceUri`; `openai/outputTemplate` is the documented alias).
+      _meta: t.widget ? { securitySchemes, ui: { resourceUri: t.widget.uri }, "openai/outputTemplate": t.widget.uri } : { securitySchemes },
     };
   });
 }
@@ -58,6 +60,7 @@ export function createSuite(opts: SuiteOptions) {
   const fixtures: LoadedFixtures = loadFixtures(opts.fixturesPath);
   const ledger = new ReceiptLedger(opts.receiptsJsonlPath);
   const descriptors = toolDescriptors();
+  const widgets = loadWidgets();
 
   const subjectKey = opts.subjectKey ?? randomBytes(32);
   /** HMAC pseudonym: stable per subject within one key, not reversible or guessable without the key. */
@@ -88,8 +91,17 @@ export function createSuite(opts: SuiteOptions) {
   }
 
   function buildMcpServer(): Server {
-    const server = new Server({ name: SERVER_NAME, version: SERVER_VERSION }, { capabilities: { tools: {} }, instructions: INSTRUCTIONS });
+    const server = new Server({ name: SERVER_NAME, version: SERVER_VERSION }, { capabilities: { tools: {}, resources: {} }, instructions: INSTRUCTIONS });
     server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: descriptors as any }));
+    // Templates are filtered by scope: a client sign-in can neither list nor read the Operator template.
+    server.setRequestHandler(ListResourcesRequestSchema, async (_req, extra) => ({
+      resources: widgets.filter((w) => extra.authInfo?.scopes.includes(w.scope)).map((w) => ({ uri: w.uri, name: w.name, title: w.title, mimeType: WIDGET_MIME, _meta: WIDGET_META })),
+    }));
+    server.setRequestHandler(ReadResourceRequestSchema, async (req, extra) => {
+      const w = widgets.find((x) => x.uri === req.params.uri);
+      if (!w || !extra.authInfo?.scopes.includes(w.scope)) throw new McpError(ErrorCode.InvalidParams, `Resource not available: ${req.params.uri}`);
+      return { contents: [{ uri: w.uri, mimeType: WIDGET_MIME, text: w.html, _meta: WIDGET_META }] };
+    });
     server.setRequestHandler(CallToolRequestSchema, async (req, extra): Promise<CallToolResult> => {
       const tool = TOOLS.find((t) => t.name === req.params.name);
       if (!tool) throw new McpError(ErrorCode.InvalidParams, `Unknown tool: ${req.params.name}`);
@@ -120,6 +132,7 @@ export function createSuite(opts: SuiteOptions) {
           subjectSha256: sub,
           receiptsForSubject: () => ledger.all().filter((x) => x.subject_sha256 === sub),
           verifyChain: () => ledger.verify(),
+          clientBinding: typeof auth.extra?.clientBinding === "string" ? auth.extra.clientBinding : null,
         }, parsed.data);
       } catch {
         return respond(tool, auth, parsed.data, { outcome: "unavailable", completeness: "not-applicable", reason_codes: ["MCP_INTERNAL_ERROR"], result: null, text: "The tool failed internally; no data was returned." });

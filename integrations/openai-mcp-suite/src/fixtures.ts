@@ -8,6 +8,8 @@ import { z } from "zod/v4";
 /** Evidence classes used across MIRRORNODE handoffs. */
 export const EvidenceClass = z.enum(["OBSERVED", "REPORTED", "INFERRED", "BLOCKED", "UNKNOWN"]);
 
+export const CUSTODY_STAGES = ["intake_pending", "intake_complete", "fulfillment_started", "paused", "delivered", "refunded"] as const;
+
 const Gate = z.object({
   id: z.string(), description: z.string(), owner_role: z.string(),
   state: z.enum(["OPEN", "CLOSED"]), evidence_class: EvidenceClass, evidence_ref: z.string().nullable(),
@@ -45,6 +47,15 @@ const FixtureFile = z.object({
   })),
   contradictions: z.array(z.object({
     id: z.string(), record_ids: z.array(z.string()), description: z.string(), status: z.string(), resolution_owner: z.string(),
+  })),
+  engagements: z.array(z.object({
+    id: z.string(), client_id: z.string(), client_label: z.string(), offer: z.string(),
+    /** Mirrors the Osiris fulfillment_status names (platform PR 63/64), synthetic only. */
+    custody_stage: z.enum(CUSTODY_STAGES),
+    milestones: z.array(z.object({ id: z.string(), title: z.string(), state: z.enum(["PENDING", "IN_PROGRESS", "DONE", "BLOCKED"]), client_visible: z.boolean() })),
+    evidence: z.array(z.object({ id: z.string(), title: z.string(), evidence_class: EvidenceClass, client_visible: z.boolean(), ref: z.string() })),
+    approvals: z.array(z.object({ id: z.string(), title: z.string(), approver_role: z.enum(["OPERATOR", "CLIENT", "THOTH"]), state: z.enum(["PENDING", "RECORDED"]), client_visible: z.boolean() })),
+    internal_notes: z.array(z.string()),
   })),
 });
 export type Fixtures = z.infer<typeof FixtureFile>;

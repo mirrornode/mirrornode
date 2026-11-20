@@ -94,5 +94,40 @@
   ],
   "contradictions": [
     { "id": "CTR-SYN-001", "record_ids": ["REC-SYN-004", "REC-SYN-005"], "description": "Two sources state different delivery targets.", "status": "UNRESOLVED", "resolution_owner": "OPERATOR" }
+  ],
+  "engagements": [
+    {
+      "id": "ENG-SYN-001", "client_id": "CLI-SYN-A", "client_label": "Synthetic Client A", "offer": "Audit engagement (synthetic)", "custody_stage": "fulfillment_started",
+      "milestones": [
+        {"id": "MS-SYN-001-1", "title": "Intake received", "state": "DONE", "client_visible": true},
+        {"id": "MS-SYN-001-2", "title": "Findings drafted", "state": "IN_PROGRESS", "client_visible": true},
+        {"id": "MS-SYN-001-3", "title": "Independent review recorded", "state": "PENDING", "client_visible": false},
+        {"id": "MS-SYN-001-4", "title": "Deliverable released", "state": "PENDING", "client_visible": true}
+      ],
+      "evidence": [
+        {"id": "EV-SYN-001-1", "title": "Intake form summary", "evidence_class": "OBSERVED", "client_visible": true, "ref": "synthetic://eng-001/intake"},
+        {"id": "EV-SYN-001-2", "title": "Draft findings working file", "evidence_class": "INFERRED", "client_visible": false, "ref": "synthetic://eng-001/draft"}
+      ],
+      "approvals": [
+        {"id": "AP-SYN-001-1", "title": "Release deliverable", "approver_role": "OPERATOR", "state": "PENDING", "client_visible": false},
+        {"id": "AP-SYN-001-2", "title": "Security disposition on draft", "approver_role": "THOTH", "state": "PENDING", "client_visible": false},
+        {"id": "AP-SYN-001-3", "title": "Client acceptance of deliverable", "approver_role": "CLIENT", "state": "PENDING", "client_visible": true}
+      ],
+      "internal_notes": ["Synthetic internal note A: reviewer slot not yet assigned."]
+    },
+    {
+      "id": "ENG-SYN-002", "client_id": "CLI-SYN-B", "client_label": "Synthetic Client B", "offer": "Audit engagement (synthetic)", "custody_stage": "paused",
+      "milestones": [
+        {"id": "MS-SYN-002-1", "title": "Intake received", "state": "DONE", "client_visible": true},
+        {"id": "MS-SYN-002-2", "title": "Findings drafted", "state": "BLOCKED", "client_visible": true}
+      ],
+      "evidence": [
+        {"id": "EV-SYN-002-1", "title": "Intake form summary", "evidence_class": "OBSERVED", "client_visible": true, "ref": "synthetic://eng-002/intake"}
+      ],
+      "approvals": [
+        {"id": "AP-SYN-002-1", "title": "Resume paused engagement", "approver_role": "OPERATOR", "state": "PENDING", "client_visible": false}
+      ],
+      "internal_notes": ["Synthetic internal note B: paused pending a payment-status check."]
+    }
   ]
 }

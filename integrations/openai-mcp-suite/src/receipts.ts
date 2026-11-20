@@ -17,7 +17,7 @@ export interface Receipt {
   receipt_id: string;
   sequence: number;
   tool: string;
-  node: "THEIA" | "PTAH" | "THOTH" | "LATTICE";
+  node: "THEIA" | "PTAH" | "THOTH" | "LATTICE" | "DESK";
   invoked_at: string;
   outcome: Outcome;
   reason_codes: ReasonCode[];

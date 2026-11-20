@@ -4,6 +4,8 @@
 
 This is a minimal vertical slice for Operation Double Gate, Workstream B: one MCP server (Streamable HTTP, stateless, `POST /mcp`) exposing ten read-only tools across four proposed capability surfaces, with OAuth resource-server checks and hash-chained evidence receipts.
 
+v0.2 (20 Nov 2026) adds a read-only Engagement Desk for the OpenAI integration handoff (Phase B and the read half of Phase C): an Operator view and a client view, each with its own MCP Apps widget template. See "Engagement Desk" below.
+
 These surfaces are proposed integration capabilities. They do not grant, bypass or redefine node authority. Execution authority stays with LUCIAN per `SYSTEM_CONTRACT.md`; THOTH keeps security adjudication; the Operator keeps final authorization. No tool here executes, sends, stores, deploys or authorizes anything.
 
 ## Tools
@@ -20,8 +22,19 @@ These surfaces are proposed integration capabilities. They do not grant, bypass 
 | LATTICE | `lattice_get_record` | `suite:lattice.read` | Record with attribution (cited source, recorder, time) and contradictions touching it |
 | LATTICE | `lattice_list_contradictions` | `suite:lattice.read` | Both sides of each contradiction and its resolution owner |
 | LATTICE | `lattice_check_receipt_chain` | `suite:lattice.read` | Hash-chain consistency check (not a truth or approval claim) and the caller's own receipts |
+| DESK | `desk_get_operator_view` | `suite:desk.operator` | All synthetic engagements: custody stage, milestones, evidence, pending approvals, internal notes. Widget: `ui://mirrornode/engagement-desk-operator.html`. Nothing can be approved from it |
+| DESK | `client_get_engagement` | `client:engagement.read` | The one engagement bound to the client's signed token: client-safe stage label, visible milestones, shared evidence, items waiting on the client. Widget: `ui://mirrornode/engagement-desk-client.html` |
 
 All tools declare `readOnlyHint: true`, `destructiveHint: false`, `openWorldHint: false`, `idempotentHint: true`, an `inputSchema` with `additionalProperties: false`, an `outputSchema`, and `securitySchemes` (top-level and mirrored in `_meta`). The exported descriptors are in `docs/tool-descriptors.json`.
+
+## Engagement Desk (v0.2, synthetic)
+
+- **Two audiences, two scopes, two templates.** `suite:desk.operator` reaches the Operator view and template. `client:engagement.read` reaches only the client tool and client template. A client token cannot list or read the Operator template, and cannot call any THEIA, PTAH, THOTH, LATTICE or Operator tool.
+- **Client binding comes only from the signed token.** The `mn_client_id` claim (pattern `CLI-…`) selects the engagement. There is no client-id input; an extra input field is rejected. A token with the client scope but no valid binding gets `unavailable/SOURCE_UNREADABLE`.
+- **No cross-client existence leak.** Another client's engagement id and an unknown id return the same `unavailable/SOURCE_MISSING` answer.
+- **Client-safe projection.** Internal notes, THOTH and Operator approvals, items marked not client-visible, client labels and the raw Osiris `fulfillment_status` never reach the client. The stage is shown as a plain label (`paused` reads "On hold").
+- **Widgets.** `text/html;profile=mcp-app`, served as MCP resources with `_meta.ui.csp` connect and resource domain lists empty. Rendering uses `createElement`/`textContent` only, a meta CSP blocks network, images, frames and forms, and no buttons or inputs exist. Data arrives from `window.openai.toolOutput` or the MCP Apps `ui/notifications/tool-result` message, accepted only from the parent window. Only the two render tools carry `_meta.ui.resourceUri` (and the `openai/outputTemplate` alias).
+- **Engagement stages** use the Osiris custody vocabulary (`intake_pending`, `intake_complete`, `fulfillment_started`, `paused`, `delivered`, `refunded`) so a later read model can map onto `fulfillment_status`. Nothing here reads Osiris.
 
 ## CORE-HUB governance alignment
 
@@ -50,7 +63,7 @@ Each call (including denials and invalid input) appends a receipt: tool, node, o
 ```bash
 cd integrations/openai-mcp-suite
 npm ci
-npm test          # 29 tests
+npm test          # 42 tests
 npm run build && npm start   # loopback only; prints a 15-minute synthetic dev token
 ```
 
@@ -58,4 +71,4 @@ This package sits outside the root pnpm workspace globs on purpose, so it does n
 
 ## Not included (see `docs/READINESS.md`)
 
-A real OAuth authorization server, a public HTTPS deployment, a privacy policy, a UI component, real data sources, CI wiring, and anything that would make this submittable. OpenAI's current guidelines state that demo plugins are not accepted.
+A real OAuth authorization server, a public HTTPS deployment, a privacy policy, uploads or approval writes, real data sources, CI wiring, and anything that would make this submittable. OpenAI's current guidelines state that demo plugins are not accepted.

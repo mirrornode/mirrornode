@@ -8,6 +8,7 @@ import { DevIssuer } from "../src/dev-issuer.js";
 export interface Harness {
   base: string; resource: string; issuer: DevIssuer; suite: ReturnType<typeof createSuite>; http: HttpServer;
   token: (scopes: string[], sub?: string) => Promise<string>;
+  tokenWith: (scopes: string[], claims: Record<string, unknown>, sub?: string) => Promise<string>;
   client: (token: string) => Promise<Client>;
   close: () => Promise<void>;
 }
@@ -24,6 +25,7 @@ export async function startHarness(extra: Partial<SuiteOptions> = {}): Promise<H
   return {
     base, resource, issuer, suite, http,
     token: (scopes, sub) => issuer.mint({ audience: resource, scopes, sub }),
+    tokenWith: (scopes, claims, sub) => issuer.mint({ audience: resource, scopes, sub, claims }),
     client: async (token) => {
       const c = new Client({ name: "synthetic-chatgpt-stand-in", version: "0.1.0" });
       await c.connect(new StreamableHTTPClientTransport(new URL(resource), { requestInit: { headers: { Authorization: `Bearer ${token}` } } }));

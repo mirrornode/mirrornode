@@ -18,7 +18,7 @@ describe("tool descriptors meet the published submission rules", () => {
     const { result } = await res.json();
     const names = result.tools.map((t: any) => t.name);
     expect(new Set(names).size).toBe(names.length);
-    expect(names).toHaveLength(10);
+    expect(names).toHaveLength(12);
     for (const t of result.tools) {
       expect(t.description.length).toBeGreaterThan(40);
       expect(t.title).toBeTruthy();
@@ -30,9 +30,11 @@ describe("tool descriptors meet the published submission rules", () => {
       expect(t.outputSchema.additionalProperties).toBe(false);
       expect(t.outputSchema.required).toEqual(expect.arrayContaining(["outcome", "completeness", "reason_codes", "result", "receipt"]));
       expect(t.description).not.toMatch(/\bverif(y|ied|ies)\b/i);
-      expect(t.securitySchemes).toEqual([{ type: "oauth2", scopes: [expect.stringMatching(/^suite:(theia|ptah|thoth|lattice)\.read$/)] }]);
+      expect(t.securitySchemes).toEqual([{ type: "oauth2", scopes: [expect.stringMatching(/^(suite:(theia|ptah|thoth|lattice)\.read|suite:desk\.operator|client:engagement\.read)$/)] }]);
       expect(t._meta.securitySchemes).toEqual(t.securitySchemes);
-      expect(t.name).toMatch(/^(theia|ptah|thoth|lattice)_[a-z_]+$/);
+      expect(t.name).toMatch(/^(theia|ptah|thoth|lattice|desk|client)_[a-z_]+$/);
+      // Only render tools link a widget template.
+      if (t._meta.ui) expect(["desk_get_operator_view", "client_get_engagement"]).toContain(t.name);
       expect(JSON.stringify(t.outputSchema)).not.toContain("provenance");
     }
   });

@@ -14,9 +14,9 @@ export class DevIssuer {
     return new DevIssuer(issuer, privateKey, publicKey);
   }
 
-  async mint(opts: { audience: string; scopes: string[]; sub?: string; clientId?: string; ttlSeconds?: number; issuer?: string; notBefore?: number }): Promise<string> {
+  async mint(opts: { audience: string; scopes: string[]; sub?: string; clientId?: string; ttlSeconds?: number; issuer?: string; notBefore?: number; claims?: Record<string, unknown> }): Promise<string> {
     const now = Math.floor(Date.now() / 1000);
-    const jwt = new SignJWT({ scope: opts.scopes.join(" "), client_id: opts.clientId ?? "synthetic-client" })
+    const jwt = new SignJWT({ ...(opts.claims ?? {}), scope: opts.scopes.join(" "), client_id: opts.clientId ?? "synthetic-client" })
       .setProtectedHeader({ alg: "ES256" })
       .setIssuer(opts.issuer ?? this.issuer)
       .setAudience(opts.audience)

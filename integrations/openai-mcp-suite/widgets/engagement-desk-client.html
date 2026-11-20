@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; frame-src 'none'; form-action 'none'">
+<title>Your engagement</title>
+<style>
+body{font:14px/1.4 system-ui,sans-serif;margin:0;padding:12px;color:CanvasText;background:transparent}
+.banner{font-size:12px;opacity:.75;margin:0 0 8px}.muted{opacity:.6}
+h2{font-size:16px;margin:0 0 2px}h3{font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin:12px 0 4px;opacity:.7}
+ol,ul{margin:0;padding-left:18px}.stage{font-weight:600}
+</style></head>
+<body><div id="root"></div>
+<script>
+window.__MN_RENDER = function (r, el, root) {
+  if (r.audience !== "client" || !r.engagement) { root.appendChild(el("p", "Wrong view for this data.", "muted")); return; }
+  var e = r.engagement;
+  root.appendChild(el("h2", e.offer));
+  root.appendChild(el("p", "Status: " + e.stage, "stage"));
+  root.appendChild(el("h3", "Milestones"));
+  var ol = el("ol"); (e.milestones || []).forEach(function (m) { ol.appendChild(el("li", m.title + " — " + m.state.replace("_", " ").toLowerCase())); }); root.appendChild(ol);
+  root.appendChild(el("h3", "Shared with you"));
+  var ul = el("ul"); (e.shared_evidence || []).forEach(function (v) { ul.appendChild(el("li", v.title)); }); if (!ul.firstChild) ul.appendChild(el("li", "Nothing yet", "muted")); root.appendChild(ul);
+  root.appendChild(el("h3", "Waiting on you"));
+  var w = el("ul"); (e.waiting_on_you || []).forEach(function (a) { w.appendChild(el("li", a.title)); }); if (!w.firstChild) w.appendChild(el("li", "Nothing right now", "muted")); root.appendChild(w);
+};
+</script>
+<script>/*__MN_BRIDGE__*/</script>
+</body></html>

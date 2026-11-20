@@ -3,13 +3,15 @@ import type { Fixtures } from "./fixtures.js";
 import type { Receipt } from "./receipts.js";
 import { SCOPES } from "./auth.js";
 
-type Node = "THEIA" | "PTAH" | "THOTH" | "LATTICE";
+type Node = "THEIA" | "PTAH" | "THOTH" | "LATTICE" | "DESK";
 
 export interface ToolContext {
   fx: Fixtures;
   subjectSha256: string;
   receiptsForSubject: () => Receipt[];
   verifyChain: () => { consistent: boolean; checked: number; first_mismatch_sequence: number | null };
+  /** Client id bound by the signed token (mn_client_id), or null. Never taken from tool input. */
+  clientBinding: string | null;
 }
 /** CG-0032 §12 outcome vocabulary and reason codes. */
 export type Outcome = "success" | "partial" | "unavailable" | "failed" | "unsupported";
@@ -32,6 +34,8 @@ export interface ToolDef {
   input: z.ZodObject;
   result: z.ZodType;
   handler: (ctx: ToolContext, input: any) => HandlerResult;
+  /** MCP Apps template this tool renders into, if any. Only render tools carry one. */
+  widget?: { uri: string; audience: "operator" | "client" };
 }
 
 const Id = (prefix: string) => z.string().regex(new RegExp(`^${prefix}-[A-Z0-9-]{1,40}$`)).describe(`Identifier starting with ${prefix}-`);
@@ -263,3 +267,82 @@ export const TOOLS: ToolDef[] = [
     },
   },
 ];
+
+const CustodyStage = z.enum(["intake_pending", "intake_complete", "fulfillment_started", "paused", "delivered", "refunded"]);
+const MilestoneOut = z.strictObject({ id: z.string(), title: z.string(), state: z.enum(["PENDING", "IN_PROGRESS", "DONE", "BLOCKED"]) });
+/** Client-safe wording for the Osiris custody stage; internal state names stay on the Operator side. */
+const CLIENT_STAGE_LABEL: Record<z.infer<typeof CustodyStage>, string> = {
+  intake_pending: "Waiting for your intake form",
+  intake_complete: "Intake received",
+  fulfillment_started: "In progress",
+  paused: "On hold",
+  delivered: "Delivered",
+  refunded: "Closed",
+};
+export const WIDGET_URIS = { operator: "ui://mirrornode/engagement-desk-operator.html", client: "ui://mirrornode/engagement-desk-client.html" } as const;
+
+export const DESK_TOOLS: ToolDef[] = [
+  {
+    name: "desk_get_operator_view",
+    title: "Engagement Desk: Operator view",
+    node: "DESK", scope: SCOPES.DESK_OPERATOR,
+    widget: { uri: WIDGET_URIS.operator, audience: "operator" },
+    description: "Operator only. Use this to show the internal Engagement Desk across synthetic engagements: custody stage, milestones, evidence, pending approvals and internal notes. Pending approvals are listed for the Operator to record elsewhere; this tool cannot approve, release, send or change anything.",
+    input: z.strictObject({ client_id: z.string().regex(/^CLI-[A-Z0-9-]{1,40}$/).optional() }),
+    result: z.strictObject({
+      audience: z.literal("operator"),
+      engagements: z.array(z.strictObject({
+        id: z.string(), client_id: z.string(), client_label: z.string(), offer: z.string(), custody_stage: CustodyStage,
+        milestones: z.array(MilestoneOut.extend({ client_visible: z.boolean() })),
+        evidence: z.array(z.strictObject({ id: z.string(), title: z.string(), evidence_class: Evidence, client_visible: z.boolean() })),
+        pending_approvals: z.array(z.strictObject({ id: z.string(), title: z.string(), approver_role: z.enum(["OPERATOR", "CLIENT", "THOTH"]) })),
+        internal_notes: z.array(z.string()),
+      })),
+      actions_available_here: z.array(z.never()).max(0),
+    }),
+    handler: ({ fx }, { client_id }) => {
+      const list = fx.engagements.filter((e) => !client_id || e.client_id === client_id).map((e) => ({
+        id: e.id, client_id: e.client_id, client_label: e.client_label, offer: e.offer, custody_stage: e.custody_stage,
+        milestones: e.milestones.map((m) => ({ id: m.id, title: m.title, state: m.state, client_visible: m.client_visible })),
+        evidence: e.evidence.map((v) => ({ id: v.id, title: v.title, evidence_class: v.evidence_class, client_visible: v.client_visible })),
+        pending_approvals: e.approvals.filter((a) => a.state === "PENDING").map((a) => ({ id: a.id, title: a.title, approver_role: a.approver_role })),
+        internal_notes: e.internal_notes,
+      }));
+      const pending = list.reduce((n, e) => n + e.pending_approvals.length, 0);
+      return { ok: true, result: { audience: "operator", engagements: list, actions_available_here: [] }, text: `${list.length} synthetic engagement(s), ${pending} pending approval(s). Nothing can be approved from this view.` };
+    },
+  },
+  {
+    name: "client_get_engagement",
+    title: "My engagement status",
+    node: "DESK", scope: SCOPES.CLIENT,
+    widget: { uri: WIDGET_URIS.client, audience: "client" },
+    description: "Use this to show the signed-in client the status of their own engagement: stage, milestones, shared evidence and what is waiting on them. It only ever returns the engagement bound to the client's sign-in; it shows no internal notes, security records or other clients.",
+    input: z.strictObject({ engagement_id: Id("ENG").optional() }),
+    result: z.strictObject({
+      audience: z.literal("client"),
+      engagement: z.strictObject({
+        id: z.string(), offer: z.string(), stage: z.string(),
+        milestones: z.array(MilestoneOut),
+        shared_evidence: z.array(z.strictObject({ id: z.string(), title: z.string() })),
+        waiting_on_you: z.array(z.strictObject({ id: z.string(), title: z.string() })),
+      }),
+    }),
+    handler: ({ fx, clientBinding }, { engagement_id }) => {
+      if (!clientBinding) return { ok: false, outcome: "unavailable", completeness: "not-applicable", reason_codes: ["SOURCE_UNREADABLE"], message: "This sign-in is not bound to a client engagement." };
+      const mine = fx.engagements.filter((e) => e.client_id === clientBinding);
+      // Another client's id and an unknown id get the same answer, so existence is not revealed.
+      const e = engagement_id ? mine.find((x) => x.id === engagement_id) : mine[0];
+      if (!e) return notFound("engagement for this sign-in", engagement_id ?? "(default)");
+      const engagement = {
+        id: e.id, offer: e.offer, stage: CLIENT_STAGE_LABEL[e.custody_stage],
+        milestones: e.milestones.filter((m) => m.client_visible).map((m) => ({ id: m.id, title: m.title, state: m.state })),
+        shared_evidence: e.evidence.filter((v) => v.client_visible).map((v) => ({ id: v.id, title: v.title })),
+        waiting_on_you: e.approvals.filter((a) => a.client_visible && a.approver_role === "CLIENT" && a.state === "PENDING").map((a) => ({ id: a.id, title: a.title })),
+      };
+      return { ok: true, result: { audience: "client", engagement }, text: `${e.id}: ${engagement.stage}; ${engagement.waiting_on_you.length} item(s) waiting on you.` };
+    },
+  },
+];
+
+export const ALL_TOOLS: ToolDef[] = [...TOOLS, ...DESK_TOOLS];

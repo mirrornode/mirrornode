@@ -6,6 +6,10 @@ export const SCOPES = {
   PTAH: "suite:ptah.read",
   THOTH: "suite:thoth.read",
   LATTICE: "suite:lattice.read",
+  /** Operator-only Engagement Desk (Phase B). */
+  DESK_OPERATOR: "suite:desk.operator",
+  /** Client-facing, project-scoped view (Phase C). Requires an mn_client_id claim. */
+  CLIENT: "client:engagement.read",
 } as const;
 export const ALL_SCOPES = Object.values(SCOPES);
 
@@ -74,6 +78,10 @@ export async function verifyBearer(cfg: AuthConfig, header: string | undefined):
     scopes,
     expiresAt: payload.exp,
     resource: new URL(cfg.resource),
-    extra: { sub: String(payload.sub) },
+    extra: {
+      sub: String(payload.sub),
+      // Client binding comes only from the signed token, never from tool input.
+      clientBinding: typeof payload.mn_client_id === "string" && /^CLI-[A-Z0-9-]{1,40}$/.test(payload.mn_client_id) ? payload.mn_client_id : null,
+    },
   };
 }

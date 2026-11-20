@@ -4,6 +4,38 @@ Prepared 18 Nov 2026 for Operation Double Gate, Workstream B. Evidence labels: O
 
 **Disposition: BLOCKED for release.** The synthetic slice works locally and is ready for engineering review as a draft PR. A live ChatGPT connection is blocked on an authorization server and a public HTTPS deployment, both outside this task's authority. Publication is blocked on policy and account prerequisites listed below.
 
+## 0. Update 20 Nov 2026 — OpenAI integration handoff (Phase A/B/C)
+
+OpenAI Support case 20613412 gave build guidance (MCP Apps SDK, test as a ChatGPT custom MCP plugin, review requirements, submit when ready). It is support guidance, not technical approval, partnership or publication authorization.
+
+**Docs re-read 20 Nov 2026.** `developers.openai.com/apps-sdk` now serves the Plugins landing page (canonical `/plugins`); OBSERVED. Also read: `/plugins/build/mcp-server`, `/plugins/build/chatgpt-ui`, `/plugins/build/auth`, `/plugins/deploy/connect-chatgpt`, `/plugins/deploy/app-review`; their quotes came through a fetch summary, so they are REPORTED until a reviewer reads the pages directly. `help.openai.com/articles/20001040` did not load; UNKNOWN. Pages carry no dates and the changelog was not re-read.
+
+Changes or sharper wording since the 18 Nov read (REPORTED):
+
+- The directory is described as one universal plugin directory shared by ChatGPT and Codex.
+- "Only submit the plugin if you intend for it to be publicly available"; private use goes through a custom MCP server connection. This supports keeping MIRRORNODE as a private connector until a public listing is decided.
+- Redirect URI: copy the exact value shown on the plugin management page (18 Nov notes named a fixed URI; treat the management page as authoritative).
+- Submission needs a stable public HTTPS endpoint; tunnels are not accepted for submission. Reviewers need a demo account without MFA. Submitter permission is named `api.apps.write`.
+- Widget contract: MIME `text/html;profile=mcp-app`; tool links its template with `_meta.ui.resourceUri` (`openai/outputTemplate` alias); "only the render tool should include `_meta.ui.resourceUri`"; `_meta.ui.csp` with `connectDomains`, `resourceDomains`, `frameDomains` kept narrow; data via `ui/notifications/tool-result` (alias `window.openai.toolOutput`); widget-initiated calls via `tools/call` (alias `window.openai.callTool`); state in `widgetState`, not localStorage. Custom UI is optional.
+- Test path in ChatGPT: Plugins → + → "Add custom MCP server" → "Create as a plugin". No plan named; account and workspace policies apply.
+
+**Phase mapping.**
+
+| Phase | Ask | State in this package |
+|---|---|---|
+| A | MCP foundation, THEIA/PTAH/THOTH/LATTICE tools, synthetic, permissions enforced | Built (v0.1, 10 tools, scope per surface) |
+| B | In-ChatGPT Engagement Desk, Operator experience distinct from client | Read-only slice built: `desk_get_operator_view` + Operator widget. No approvals or writes |
+| C | Project-scoped authenticated client access: intake, uploads, progress, deliverable review, milestone approval | Read half only: `client_get_engagement` + client widget, binding from signed `mn_client_id`. Intake, uploads, review and approval writes not built |
+
+**Widget handshake.** The templates listen for `ui/notifications/tool-result` from the parent window and read `window.openai.toolOutput`. They do not send `ui/initialize`. Whether ChatGPT requires the widget to initiate a handshake before delivering results is INFERRED-not-required from the docs read; confirm in a ChatGPT custom-plugin test.
+
+**New gaps for Phase B/C.**
+
+- The authorization server must put a verified client binding (`mn_client_id`) in client tokens and must never let a user choose it. No AS is chosen yet.
+- Tenant isolation is per-claim filtering over synthetic fixtures. Real data needs row-level enforcement at the source (for Osiris, RLS plus the operator-only RPCs), not only filtering in this server.
+- Writes (uploads, milestone approval, deliverable acceptance) need: `readOnlyHint: false` tools with accurate `destructiveHint`, human confirmation, digest/version/recipient binding like Osiris review-before-delivery (platform PR #64), THOTH review, and a decision on file storage and retention. Restricted data rules forbid collecting credentials, card data, government ids or PHI through the plugin.
+- A public listing of a client portal for a paid digital service conflicts with current commerce rules (no selling digital services or linking checkout from the plugin). A private custom connector per client avoids listing but still needs the AS and hosting.
+
 ## 1. Integration target (B1)
 
 Sources read 18 Nov 2026 on developers.openai.com: `apps-sdk/build/mcp-server`, `apps-sdk/mcp-apps-in-chatgpt`, `apps-sdk/changelog`, `apps-sdk/app-submission-guidelines`, `plugins/build/auth`, `plugins/guides/security-privacy`, `plugins/deploy/connect-chatgpt`, `plugins/deploy/submission`.
@@ -107,7 +139,7 @@ Public HTTPS host with a stable `/mcp` URL and verified domain; DNS-rebinding/ho
 - No authorization server; dev issuer is test-only.
 - Receipts are in memory (optional local JSONL); a restart starts a new chain.
 - Stateless only; no SSE streaming or sessions.
-- No UI component.
+- UI: two read-only Engagement Desk templates (v0.2); not yet rendered inside ChatGPT.
 - Package not wired into CI.
 - Node role framing in this slice (THEIA coordination, THOTH security) follows the Operation Double Gate brief and differs from `SYSTEM_CONTRACT.md` (THEIA "Witness & Observation", THOTH "Services & Health"); LATTICE has no registry row there. Recorded, not reconciled.
 - The Osiris $149 offer cannot be sold or linked for checkout from inside a ChatGPT plugin under current commerce rules.
