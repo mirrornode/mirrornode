@@ -33,7 +33,7 @@ All tools declare `readOnlyHint: true`, `destructiveHint: false`, `openWorldHint
 - **Client binding comes only from the signed token.** The `mn_client_id` claim (pattern `CLI-…`) selects the engagement. There is no client-id input; an extra input field is rejected. A token with the client scope but no valid binding gets `unavailable/SOURCE_UNREADABLE`.
 - **No cross-client existence leak.** Another client's engagement id and an unknown id return the same `unavailable/SOURCE_MISSING` answer.
 - **Client-safe projection.** Internal notes, THOTH and Operator approvals, items marked not client-visible, client labels and the raw Osiris `fulfillment_status` never reach the client. The stage is shown as a plain label (`paused` reads "On hold").
-- **Widgets.** `text/html;profile=mcp-app`, served as MCP resources with `_meta.ui.csp` connect and resource domain lists empty. Rendering uses `createElement`/`textContent` only, a meta CSP blocks network, images, frames and forms, and no buttons or inputs exist. Data arrives from `window.openai.toolOutput` or the MCP Apps `ui/notifications/tool-result` message, accepted only from the parent window. Only the two render tools carry `_meta.ui.resourceUri` (and the `openai/outputTemplate` alias).
+- **Widgets.** `text/html;profile=mcp-app`, served as MCP resources with `_meta.ui.csp` connect and resource domain lists empty. Rendering uses `createElement`/`textContent` only, a meta CSP blocks network, images, frames and forms, and no buttons or inputs exist. The template opens the MCP Apps handshake (`ui/initialize`, then `ui/notifications/initialized` after the host answers). Data arrives from `window.openai.toolOutput` or the `ui/notifications/tool-result` message, accepted only from the parent window. Only the two render tools carry `_meta.ui.resourceUri` (and the `openai/outputTemplate` alias).
 - **Engagement stages** use the Osiris custody vocabulary (`intake_pending`, `intake_complete`, `fulfillment_started`, `paused`, `delivered`, `refunded`) so a later read model can map onto `fulfillment_status`. Nothing here reads Osiris.
 
 ## CORE-HUB governance alignment
@@ -63,7 +63,7 @@ Each call (including denials and invalid input) appends a receipt: tool, node, o
 ```bash
 cd integrations/openai-mcp-suite
 npm ci
-npm test          # 42 tests
+npm test          # 43 tests
 npm run build && npm start   # loopback only; prints a 15-minute synthetic dev token
 ```
 

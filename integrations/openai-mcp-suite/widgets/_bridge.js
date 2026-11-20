@@ -15,13 +15,24 @@
   // Host bridge 1: window.openai alias (documented as compatibility alias).
   try { if (window.openai && window.openai.toolOutput) show(window.openai.toolOutput); } catch (e) { /* ignore */ }
   window.addEventListener("openai:set_globals", function () { try { show(window.openai && window.openai.toolOutput); } catch (e) { /* ignore */ } });
-  // Host bridge 2: MCP Apps JSON-RPC over postMessage. Only the parent window is trusted as a sender.
+  // Host bridge 2: MCP Apps JSON-RPC over postMessage (ext-apps 2.0.4 spec). Only the parent window is trusted as a sender.
+  // The View opens with ui/initialize; when the host answers, it sends ui/notifications/initialized,
+  // after which the host may deliver ui/notifications/tool-result. Nothing sensitive is sent to the host.
+  var INIT_ID = "mn-init-1";
+  var initialized = false;
+  function post(msg) { if (window.parent && window.parent !== window) window.parent.postMessage(msg, "*"); }
   window.addEventListener("message", function (ev) {
     if (ev.source !== window.parent) return;
     var m = ev.data;
-    if (!m || m.jsonrpc !== "2.0" || m.method !== "ui/notifications/tool-result") return;
+    if (!m || m.jsonrpc !== "2.0") return;
+    if (m.id === INIT_ID && !m.method) {
+      if (m.result && !initialized) { initialized = true; post({ jsonrpc: "2.0", method: "ui/notifications/initialized", params: {} }); }
+      return;
+    }
+    if (m.method !== "ui/notifications/tool-result") return;
     var p = m.params || {};
     show(p.structuredContent || null);
   });
+  post({ jsonrpc: "2.0", id: INIT_ID, method: "ui/initialize", params: { appInfo: { name: "mirrornode-engagement-desk", version: "0.2.0" }, appCapabilities: {}, protocolVersion: "2026-01-26" } });
   if (!(window.openai && window.openai.toolOutput)) show(null);
 })();

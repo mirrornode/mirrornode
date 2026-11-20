@@ -27,7 +27,7 @@ Changes or sharper wording since the 18 Nov read (REPORTED):
 | B | In-ChatGPT Engagement Desk, Operator experience distinct from client | Read-only slice built: `desk_get_operator_view` + Operator widget. No approvals or writes |
 | C | Project-scoped authenticated client access: intake, uploads, progress, deliverable review, milestone approval | Read half only: `client_get_engagement` + client widget, binding from signed `mn_client_id`. Intake, uploads, review and approval writes not built |
 
-**Widget handshake.** The templates listen for `ui/notifications/tool-result` from the parent window and read `window.openai.toolOutput`. They do not send `ui/initialize`. Whether ChatGPT requires the widget to initiate a handshake before delivering results is INFERRED-not-required from the docs read; confirm in a ChatGPT custom-plugin test.
+**Widget handshake.** The templates follow the MCP Apps spec in `@modelcontextprotocol/ext-apps` 2.0.4 (read from the npm package, 20 Nov): they post `ui/initialize` (protocol `2026-01-26`) to the parent, send `ui/notifications/initialized` once the host answers, then render `ui/notifications/tool-result` from the parent window; `window.openai.toolOutput` is also read. Which protocol version ChatGPT negotiates is UNKNOWN until a ChatGPT custom-plugin test.
 
 **New gaps for Phase B/C.**
 

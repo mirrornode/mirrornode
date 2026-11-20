@@ -160,6 +160,27 @@ describe("widget templates", () => {
     dom.window.close();
   });
 
+  it("opens the MCP Apps handshake with ui/initialize and confirms with ui/notifications/initialized only after the host answers", () => {
+    const html = loadWidgets().find((w) => w.uri === WIDGET_URIS.client)!.html;
+    const sent: any[] = [];
+    const dom = new JSDOM(html, { runScripts: "dangerously", beforeParse: (w: any) => {
+      const fakeParent = { postMessage: (m: unknown) => sent.push(m) };
+      Object.defineProperty(w, "parent", { get: () => fakeParent });
+    } });
+    const w = dom.window as any;
+    expect(sent).toHaveLength(1);
+    expect(sent[0]).toMatchObject({ jsonrpc: "2.0", method: "ui/initialize", params: { appInfo: { name: "mirrornode-engagement-desk" }, appCapabilities: {}, protocolVersion: expect.any(String) } });
+    const id = sent[0].id;
+    // A reply from another window is ignored.
+    w.dispatchEvent(new w.MessageEvent("message", { data: { jsonrpc: "2.0", id, result: {} }, source: null }));
+    expect(sent).toHaveLength(1);
+    w.dispatchEvent(new w.MessageEvent("message", { data: { jsonrpc: "2.0", id, result: { protocolVersion: "2026-01-26", hostInfo: { name: "host", version: "1" }, hostCapabilities: {}, hostContext: {} } }, source: w.parent }));
+    w.dispatchEvent(new w.MessageEvent("message", { data: { jsonrpc: "2.0", id, result: {} }, source: w.parent }));
+    expect(sent).toHaveLength(2);
+    expect(sent[1]).toEqual({ jsonrpc: "2.0", method: "ui/notifications/initialized", params: {} });
+    dom.window.close();
+  });
+
   it("the client template refuses to render Operator data even if handed it", async () => {
     const r = await call(await h.token([SCOPES.DESK_OPERATOR]), "desk_get_operator_view");
     const html = loadWidgets().find((w) => w.uri === WIDGET_URIS.client)!.html;
