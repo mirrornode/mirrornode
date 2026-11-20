@@ -1,0 +1,2816 @@
+[
+  {
+    "name": "theia_get_workstream_status",
+    "title": "Get workstream status",
+    "description": "Use this to read the current status and gates of a MIRRORNODE workstream from the synthetic fixture set. Returns each gate with its owner role, open/closed state and evidence class. Read-only; it changes nothing.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workstream_id": {
+          "description": "Workstream id. Omit to list all workstreams.",
+          "type": "string",
+          "pattern": "^WS-[A-Z0-9-]{1,40}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "THEIA"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "workstreams": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": "string"
+                      },
+                      "gates": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "owner_role": {
+                              "type": "string"
+                            },
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "OPEN",
+                                "CLOSED"
+                              ]
+                            },
+                            "evidence_class": {
+                              "type": "string",
+                              "enum": [
+                                "OBSERVED",
+                                "REPORTED",
+                                "INFERRED",
+                                "BLOCKED",
+                                "UNKNOWN"
+                              ]
+                            },
+                            "evidence_ref": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "description",
+                            "owner_role",
+                            "state",
+                            "evidence_class",
+                            "evidence_ref"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "open_gate_count": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "status",
+                      "summary",
+                      "gates",
+                      "open_gate_count"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "workstreams"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Get workstream status",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:theia.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:theia.read"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "theia_list_next_actions",
+    "title": "List next actions",
+    "description": "Use this to see which next actions on a workstream are unblocked or blocked by open gates, and which need Operator approval. It reports status only: it grants no authorization and executes nothing.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workstream_id": {
+          "type": "string",
+          "pattern": "^WS-[A-Z0-9-]{1,40}$",
+          "description": "Identifier starting with WS-"
+        }
+      },
+      "required": [
+        "workstream_id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "THEIA"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "workstream_id": {
+                  "type": "string"
+                },
+                "actions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "required_authority": {
+                        "type": "string"
+                      },
+                      "reversible": {
+                        "type": "boolean"
+                      },
+                      "blocked_by_open_gates": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "UNBLOCKED",
+                          "BLOCKED"
+                        ]
+                      },
+                      "operator_approval_required": {
+                        "type": "boolean"
+                      },
+                      "executable_by_this_server": {
+                        "type": "boolean",
+                        "const": false
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "description",
+                      "required_authority",
+                      "reversible",
+                      "blocked_by_open_gates",
+                      "state",
+                      "operator_approval_required",
+                      "executable_by_this_server"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "workstream_id",
+                "actions"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "List next actions",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:theia.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:theia.read"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "theia_build_handoff_record",
+    "title": "Build handoff record",
+    "description": "Use this to assemble a structured handoff record for a workstream addressed to one node or the Operator. The record is returned to you as a draft; this tool does not send, store or deliver it anywhere.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workstream_id": {
+          "type": "string",
+          "pattern": "^WS-[A-Z0-9-]{1,40}$",
+          "description": "Identifier starting with WS-"
+        },
+        "to": {
+          "type": "string",
+          "enum": [
+            "THEIA",
+            "PTAH",
+            "THOTH",
+            "LATTICE",
+            "OPERATOR"
+          ]
+        }
+      },
+      "required": [
+        "workstream_id",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "THEIA"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "handoff": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "DRAFT_NOT_SENT"
+                    },
+                    "from": {
+                      "type": "string",
+                      "const": "THEIA"
+                    },
+                    "to": {
+                      "type": "string"
+                    },
+                    "workstream_id": {
+                      "type": "string"
+                    },
+                    "open_gates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "owner_role": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "OPEN",
+                              "CLOSED"
+                            ]
+                          },
+                          "evidence_class": {
+                            "type": "string",
+                            "enum": [
+                              "OBSERVED",
+                              "REPORTED",
+                              "INFERRED",
+                              "BLOCKED",
+                              "UNKNOWN"
+                            ]
+                          },
+                          "evidence_ref": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "description",
+                          "owner_role",
+                          "state",
+                          "evidence_class",
+                          "evidence_ref"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "unblocked_actions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "required_authority": {
+                            "type": "string"
+                          },
+                          "reversible": {
+                            "type": "boolean"
+                          },
+                          "blocked_by_open_gates": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "UNBLOCKED",
+                              "BLOCKED"
+                            ]
+                          },
+                          "operator_approval_required": {
+                            "type": "boolean"
+                          },
+                          "executable_by_this_server": {
+                            "type": "boolean",
+                            "const": false
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "description",
+                          "required_authority",
+                          "reversible",
+                          "blocked_by_open_gates",
+                          "state",
+                          "operator_approval_required",
+                          "executable_by_this_server"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "blocked_actions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "required_authority": {
+                            "type": "string"
+                          },
+                          "reversible": {
+                            "type": "boolean"
+                          },
+                          "blocked_by_open_gates": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "UNBLOCKED",
+                              "BLOCKED"
+                            ]
+                          },
+                          "operator_approval_required": {
+                            "type": "boolean"
+                          },
+                          "executable_by_this_server": {
+                            "type": "boolean",
+                            "const": false
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "description",
+                          "required_authority",
+                          "reversible",
+                          "blocked_by_open_gates",
+                          "state",
+                          "operator_approval_required",
+                          "executable_by_this_server"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "evidence_counts": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "from",
+                    "to",
+                    "workstream_id",
+                    "open_gates",
+                    "unblocked_actions",
+                    "blocked_actions",
+                    "evidence_counts"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "handoff"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Build handoff record",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:theia.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:theia.read"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "ptah_get_readiness",
+    "title": "Get implementation readiness",
+    "description": "Use this to summarize implementation readiness of a synthetic component: its readiness label, the evidence behind each claim and its open findings with their recorded security status. Read-only.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "component_id": {
+          "type": "string",
+          "pattern": "^CMP-[A-Z0-9-]{1,40}$",
+          "description": "Identifier starting with CMP-"
+        }
+      },
+      "required": [
+        "component_id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "PTAH"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "component_id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "readiness": {
+                  "type": "string"
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "claim": {
+                        "type": "string"
+                      },
+                      "evidence_class": {
+                        "type": "string",
+                        "enum": [
+                          "OBSERVED",
+                          "REPORTED",
+                          "INFERRED",
+                          "BLOCKED",
+                          "UNKNOWN"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "claim",
+                      "evidence_class",
+                      "ref"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "unverified_claims": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "open_findings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "disposition_status": {
+                        "type": "string",
+                        "enum": [
+                          "HOLD",
+                          "CLEARED",
+                          "CLEARED_WITH_CONDITIONS",
+                          "PENDING_THOTH_REVIEW"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "severity",
+                      "title",
+                      "disposition_status"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "component_id",
+                "title",
+                "readiness",
+                "evidence",
+                "unverified_claims",
+                "open_findings"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Get implementation readiness",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:ptah.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:ptah.read"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "ptah_propose_repair",
+    "title": "Propose bounded repair",
+    "description": "Use this to get the bounded repair proposal on file for a synthetic finding: files in scope, required tests, rollback and the approvals it needs. The proposal is text only; this tool applies no change.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "finding_id": {
+          "type": "string",
+          "pattern": "^FND-[A-Z0-9-]{1,40}$",
+          "description": "Identifier starting with FND-"
+        }
+      },
+      "required": [
+        "finding_id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "PTAH"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "finding_id": {
+                  "type": "string"
+                },
+                "proposal": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "PROPOSED_NOT_APPLIED"
+                        },
+                        "summary": {
+                          "type": "string"
+                        },
+                        "files_in_scope": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "tests_required": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "rollback": {
+                          "type": "string"
+                        },
+                        "required_approvals": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "summary",
+                        "files_in_scope",
+                        "tests_required",
+                        "rollback",
+                        "required_approvals"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "reason_if_none": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "finding_id",
+                "proposal",
+                "reason_if_none"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Propose bounded repair",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:ptah.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:ptah.read"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "thoth_list_findings",
+    "title": "List security findings",
+    "description": "Use this to list synthetic security findings, optionally filtered by severity or recorded disposition status. Findings without a recorded THOTH disposition are reported as PENDING_THOTH_REVIEW. Read-only.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": [
+            "CRITICAL",
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "INFO"
+          ]
+        },
+        "disposition_status": {
+          "type": "string",
+          "enum": [
+            "HOLD",
+            "CLEARED",
+            "CLEARED_WITH_CONDITIONS",
+            "PENDING_THOTH_REVIEW"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "THOTH"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "findings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "component_id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "evidence_class": {
+                        "type": "string",
+                        "enum": [
+                          "OBSERVED",
+                          "REPORTED",
+                          "INFERRED",
+                          "BLOCKED",
+                          "UNKNOWN"
+                        ]
+                      },
+                      "disposition_status": {
+                        "type": "string",
+                        "enum": [
+                          "HOLD",
+                          "CLEARED",
+                          "CLEARED_WITH_CONDITIONS",
+                          "PENDING_THOTH_REVIEW"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "severity",
+                      "component_id",
+                      "title",
+                      "evidence_class",
+                      "disposition_status"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "holds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "findings",
+                "holds"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "List security findings",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:thoth.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:thoth.read"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "thoth_get_disposition",
+    "title": "Get security disposition",
+    "description": "Use this to read the recorded security disposition and clearance requirements for one synthetic finding. It reports what is recorded and never issues a new security verdict.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "finding_id": {
+          "type": "string",
+          "pattern": "^FND-[A-Z0-9-]{1,40}$",
+          "description": "Identifier starting with FND-"
+        }
+      },
+      "required": [
+        "finding_id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "THOTH"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "finding_id": {
+                  "type": "string"
+                },
+                "severity": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "disposition": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "HOLD",
+                        "CLEARED",
+                        "CLEARED_WITH_CONDITIONS",
+                        "PENDING_THOTH_REVIEW"
+                      ]
+                    },
+                    "recorded_by": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "recorded_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "clearance_requirements": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "recorded_by",
+                    "recorded_at",
+                    "clearance_requirements"
+                  ],
+                  "additionalProperties": false
+                },
+                "verdict_issued_by_this_tool": {
+                  "type": "boolean",
+                  "const": false
+                }
+              },
+              "required": [
+                "finding_id",
+                "severity",
+                "title",
+                "disposition",
+                "verdict_issued_by_this_tool"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Get security disposition",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:thoth.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:thoth.read"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "lattice_get_record",
+    "title": "Get source-of-truth record",
+    "description": "Use this to retrieve one synthetic source-of-truth record with its attribution (evidence class, cited source, who recorded it and when) and any contradictions that involve it. Attribution says where a record says it came from; it does not establish that the record is true or approved. Read-only.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "record_id": {
+          "type": "string",
+          "pattern": "^REC-[A-Z0-9-]{1,40}$",
+          "description": "Identifier starting with REC-"
+        }
+      },
+      "required": [
+        "record_id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "LATTICE"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "record": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "attribution": {
+                      "type": "object",
+                      "properties": {
+                        "evidence_class": {
+                          "type": "string",
+                          "enum": [
+                            "OBSERVED",
+                            "REPORTED",
+                            "INFERRED",
+                            "BLOCKED",
+                            "UNKNOWN"
+                          ]
+                        },
+                        "source_ref": {
+                          "type": "string"
+                        },
+                        "recorded_at": {
+                          "type": "string"
+                        },
+                        "recorded_by": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "evidence_class",
+                        "source_ref",
+                        "recorded_at",
+                        "recorded_by"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "value",
+                    "attribution"
+                  ],
+                  "additionalProperties": false
+                },
+                "contradictions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "resolution_owner": {
+                        "type": "string"
+                      },
+                      "record_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "description",
+                      "status",
+                      "resolution_owner",
+                      "record_ids"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "record",
+                "contradictions"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Get source-of-truth record",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:lattice.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:lattice.read"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "lattice_list_contradictions",
+    "title": "List contradictions",
+    "description": "Use this to list contradictions between synthetic source-of-truth records, with both sides and who owns the resolution. It does not resolve or overwrite either record.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "UNRESOLVED",
+            "RESOLVED"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "LATTICE"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "contradictions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "resolution_owner": {
+                        "type": "string"
+                      },
+                      "sides": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "record_id": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            },
+                            "evidence_class": {
+                              "type": "string",
+                              "enum": [
+                                "OBSERVED",
+                                "REPORTED",
+                                "INFERRED",
+                                "BLOCKED",
+                                "UNKNOWN"
+                              ]
+                            },
+                            "source_ref": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "record_id",
+                            "value",
+                            "evidence_class",
+                            "source_ref"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "description",
+                      "status",
+                      "resolution_owner",
+                      "sides"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "contradictions"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "List contradictions",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:lattice.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:lattice.read"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "lattice_check_receipt_chain",
+    "title": "Check receipt hash chain",
+    "description": "Use this to recompute the hash chain of evidence receipts on this server and list receipts created for the current signed-in user. A consistent chain means each stored receipt matches its recorded hash and link; it does not establish that any result was true, approved or authorized. Other users' receipts are counted but never listed.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "receipt_id": {
+          "type": "string",
+          "pattern": "^rcpt_[0-9a-f-]{36}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "LATTICE"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "chain": {
+                  "type": "object",
+                  "properties": {
+                    "hash_chain_consistent": {
+                      "type": "boolean"
+                    },
+                    "checked": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "first_mismatch_sequence": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "semantics": {
+                      "type": "string",
+                      "const": "Hash and link recomputation only. Not a truth, approval or authorization claim."
+                    }
+                  },
+                  "required": [
+                    "hash_chain_consistent",
+                    "checked",
+                    "first_mismatch_sequence",
+                    "semantics"
+                  ],
+                  "additionalProperties": false
+                },
+                "receipts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "receipt_id": {
+                        "type": "string"
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "tool": {
+                        "type": "string"
+                      },
+                      "outcome": {
+                        "type": "string",
+                        "enum": [
+                          "success",
+                          "partial",
+                          "unavailable",
+                          "failed",
+                          "unsupported"
+                        ]
+                      },
+                      "reason_codes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "SOURCE_MISSING",
+                            "SOURCE_UNREADABLE",
+                            "SOURCE_MALFORMED",
+                            "SCHEMA_UNSUPPORTED",
+                            "INTEGRITY_MISMATCH",
+                            "SCAN_INCOMPLETE",
+                            "SOURCE_STALE",
+                            "MCP_INTERNAL_ERROR"
+                          ]
+                        }
+                      },
+                      "invoked_at": {
+                        "type": "string"
+                      },
+                      "receipt_sha256": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "receipt_id",
+                      "sequence",
+                      "tool",
+                      "outcome",
+                      "reason_codes",
+                      "invoked_at",
+                      "receipt_sha256"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "chain",
+                "receipts"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Check receipt hash chain",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:lattice.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:lattice.read"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "desk_get_operator_view",
+    "title": "Engagement Desk: Operator view",
+    "description": "Operator only. Use this to show the internal Engagement Desk across synthetic engagements: custody stage, milestones, evidence, pending approvals and internal notes. Pending approvals are listed for the Operator to record elsewhere; this tool cannot approve, release, send or change anything.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "pattern": "^CLI-[A-Z0-9-]{1,40}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "DESK"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "audience": {
+                  "type": "string",
+                  "const": "operator"
+                },
+                "engagements": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "client_id": {
+                        "type": "string"
+                      },
+                      "client_label": {
+                        "type": "string"
+                      },
+                      "offer": {
+                        "type": "string"
+                      },
+                      "custody_stage": {
+                        "type": "string",
+                        "enum": [
+                          "intake_pending",
+                          "intake_complete",
+                          "fulfillment_started",
+                          "paused",
+                          "delivered",
+                          "refunded"
+                        ]
+                      },
+                      "milestones": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "PENDING",
+                                "IN_PROGRESS",
+                                "DONE",
+                                "BLOCKED"
+                              ]
+                            },
+                            "client_visible": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "state",
+                            "client_visible"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "evidence": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "evidence_class": {
+                              "type": "string",
+                              "enum": [
+                                "OBSERVED",
+                                "REPORTED",
+                                "INFERRED",
+                                "BLOCKED",
+                                "UNKNOWN"
+                              ]
+                            },
+                            "client_visible": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "evidence_class",
+                            "client_visible"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "pending_approvals": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "approver_role": {
+                              "type": "string",
+                              "enum": [
+                                "OPERATOR",
+                                "CLIENT",
+                                "THOTH"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "approver_role"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "internal_notes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "client_id",
+                      "client_label",
+                      "offer",
+                      "custody_stage",
+                      "milestones",
+                      "evidence",
+                      "pending_approvals",
+                      "internal_notes"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "actions_available_here": {
+                  "maxItems": 0,
+                  "type": "array",
+                  "items": {
+                    "not": {}
+                  }
+                }
+              },
+              "required": [
+                "audience",
+                "engagements",
+                "actions_available_here"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Engagement Desk: Operator view",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "suite:desk.operator"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "suite:desk.operator"
+          ]
+        }
+      ],
+      "ui": {
+        "resourceUri": "ui://mirrornode/engagement-desk-operator.html"
+      },
+      "openai/outputTemplate": "ui://mirrornode/engagement-desk-operator.html"
+    }
+  },
+  {
+    "name": "client_get_engagement",
+    "title": "My engagement status",
+    "description": "Use this to show the signed-in client the status of their own engagement: stage, milestones, shared evidence and what is waiting on them. It only ever returns the engagement bound to the client's sign-in; it shows no internal notes, security records or other clients.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "engagement_id": {
+          "type": "string",
+          "pattern": "^ENG-[A-Z0-9-]{1,40}$",
+          "description": "Identifier starting with ENG-"
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string",
+          "const": "DESK"
+        },
+        "data_classification": {
+          "type": "string",
+          "const": "SYNTHETIC"
+        },
+        "fixture_set": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "partial",
+            "unavailable",
+            "failed",
+            "unsupported"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not-applicable"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SOURCE_MISSING",
+              "SOURCE_UNREADABLE",
+              "SOURCE_MALFORMED",
+              "SCHEMA_UNSUPPORTED",
+              "INTEGRITY_MISMATCH",
+              "SCAN_INCOMPLETE",
+              "SOURCE_STALE",
+              "MCP_INTERNAL_ERROR"
+            ]
+          }
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "audience": {
+                  "type": "string",
+                  "const": "client"
+                },
+                "engagement": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "offer": {
+                      "type": "string"
+                    },
+                    "stage": {
+                      "type": "string"
+                    },
+                    "milestones": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "PENDING",
+                              "IN_PROGRESS",
+                              "DONE",
+                              "BLOCKED"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title",
+                          "state"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "shared_evidence": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "waiting_on_you": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "offer",
+                    "stage",
+                    "milestones",
+                    "shared_evidence",
+                    "waiting_on_you"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "audience",
+                "engagement"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "receipt_sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "receipt_id",
+            "sequence",
+            "receipt_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "data_classification",
+        "fixture_set",
+        "outcome",
+        "completeness",
+        "reason_codes",
+        "result",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "My engagement status",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "securitySchemes": [
+      {
+        "type": "oauth2",
+        "scopes": [
+          "client:engagement.read"
+        ]
+      }
+    ],
+    "_meta": {
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "client:engagement.read"
+          ]
+        }
+      ],
+      "ui": {
+        "resourceUri": "ui://mirrornode/engagement-desk-client.html"
+      },
+      "openai/outputTemplate": "ui://mirrornode/engagement-desk-client.html"
+    }
+  }
+]

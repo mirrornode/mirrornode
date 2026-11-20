@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; frame-src 'none'; form-action 'none'">
+<title>Engagement Desk (Operator)</title>
+<style>
+body{font:14px/1.4 system-ui,sans-serif;margin:0;padding:12px;color:CanvasText;background:transparent}
+.banner{font-size:12px;opacity:.75;margin:0 0 8px}.muted{opacity:.6}
+.card{border:1px solid color-mix(in srgb,CanvasText 18%,transparent);border-radius:8px;padding:10px;margin:0 0 10px}
+h2{font-size:15px;margin:0 0 4px}h3{font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin:10px 0 4px;opacity:.7}
+ul{margin:0;padding-left:18px}.tag{font-size:11px;border-radius:4px;padding:0 4px;margin-left:6px;background:color-mix(in srgb,CanvasText 10%,transparent)}
+.internal{border-left:3px solid #c77d00;padding-left:8px}
+</style></head>
+<body><div id="root"></div>
+<script>
+window.__MN_RENDER = function (r, el, root) {
+  if (r.audience !== "operator") { root.appendChild(el("p", "Wrong view for this data.", "muted")); return; }
+  root.appendChild(el("p", "Operator view. Internal: never shown to clients. Approvals are recorded outside ChatGPT.", "banner"));
+  (r.engagements || []).forEach(function (e) {
+    var c = el("section", null, "card");
+    var h = el("h2", e.id + " · " + e.client_label); h.appendChild(el("span", e.custody_stage, "tag")); c.appendChild(h);
+    c.appendChild(el("div", e.offer, "muted"));
+    c.appendChild(el("h3", "Milestones"));
+    var ul = el("ul"); (e.milestones || []).forEach(function (m) { var li = el("li", m.title + " — " + m.state); if (!m.client_visible) li.appendChild(el("span", "internal", "tag")); ul.appendChild(li); }); c.appendChild(ul);
+    c.appendChild(el("h3", "Evidence"));
+    var ev = el("ul"); (e.evidence || []).forEach(function (v) { var li = el("li", v.title); li.appendChild(el("span", v.evidence_class, "tag")); if (!v.client_visible) li.appendChild(el("span", "internal", "tag")); ev.appendChild(li); }); c.appendChild(ev);
+    c.appendChild(el("h3", "Pending approvals (record outside ChatGPT)"));
+    var ap = el("ul"); (e.pending_approvals || []).forEach(function (a) { ap.appendChild(el("li", a.title + " — " + a.approver_role)); }); if (!ap.firstChild) ap.appendChild(el("li", "None", "muted")); c.appendChild(ap);
+    if ((e.internal_notes || []).length) { var n = el("div", null, "internal"); n.appendChild(el("h3", "Internal notes")); e.internal_notes.forEach(function (t) { n.appendChild(el("p", t)); }); c.appendChild(n); }
+    root.appendChild(c);
+  });
+};
+</script>
+<script>/*__MN_BRIDGE__*/</script>
+</body></html>

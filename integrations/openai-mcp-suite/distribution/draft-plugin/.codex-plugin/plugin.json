@@ -1,0 +1,21 @@
+{
+  "name": "mirrornode-suite",
+  "version": "0.0.1",
+  "description": "DRAFT, NOT SUBMITTABLE. Read-only workstream status, readiness, recorded security dispositions and provenance records for MIRRORNODE operators.",
+  "author": { "name": "MIRRORNODE LLC" },
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "MIRRORNODE Suite",
+    "shortDescription": "Read workstream status, readiness and provenance records.",
+    "longDescription": "Read-only view of MIRRORNODE workstreams: gates and next actions, implementation readiness, recorded security dispositions, and source-of-truth records with provenance and contradictions. Every answer carries an evidence receipt. It does not execute, send or authorize anything.",
+    "developerName": "MIRRORNODE LLC",
+    "category": "Productivity",
+    "capabilities": [],
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
+    "websiteURL": "https://example.invalid/REPLACE",
+    "supportURL": "https://example.invalid/REPLACE",
+    "privacyPolicyURL": "https://example.invalid/REPLACE",
+    "termsOfServiceURL": "https://example.invalid/REPLACE"
+  }
+}

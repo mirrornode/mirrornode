@@ -1,0 +1,133 @@
+{
+  "data_classification": "SYNTHETIC",
+  "fixture_set": "mn-suite-synthetic-v0.1",
+  "notice": "Every record in this file is invented for integration testing. No customer, payment, credential or production security data appears here.",
+  "workstreams": [
+    {
+      "id": "WS-SYN-A",
+      "title": "Synthetic commerce delivery journey",
+      "phase": "synthetic-test",
+      "status": "IN_PROGRESS",
+      "summary": "Checkout-to-delivery state machine exercised against test events only.",
+      "gates": [
+        { "id": "G-SYN-A1", "description": "Payment-event idempotency test passes", "owner_role": "PTAH", "state": "CLOSED", "evidence_class": "OBSERVED", "evidence_ref": "REC-SYN-001" },
+        { "id": "G-SYN-A2", "description": "Security review of webhook handling", "owner_role": "THOTH", "state": "OPEN", "evidence_class": "REPORTED", "evidence_ref": "FND-SYN-001" },
+        { "id": "G-SYN-A3", "description": "Operator authorizes a live supervised test", "owner_role": "OPERATOR", "state": "OPEN", "evidence_class": "UNKNOWN", "evidence_ref": null }
+      ]
+    },
+    {
+      "id": "WS-SYN-B",
+      "title": "Synthetic integration suite",
+      "phase": "synthetic-test",
+      "status": "IN_PROGRESS",
+      "summary": "Read-only MCP surfaces over synthetic fixtures with evidence receipts.",
+      "gates": [
+        { "id": "G-SYN-B1", "description": "Local end-to-end journey test passes", "owner_role": "PTAH", "state": "CLOSED", "evidence_class": "OBSERVED", "evidence_ref": "REC-SYN-002" },
+        { "id": "G-SYN-B2", "description": "Production authorization server selected", "owner_role": "OPERATOR", "state": "OPEN", "evidence_class": "UNKNOWN", "evidence_ref": null },
+        { "id": "G-SYN-B3", "description": "Security review of tool surfaces", "owner_role": "THOTH", "state": "OPEN", "evidence_class": "UNKNOWN", "evidence_ref": "FND-SYN-002" }
+      ]
+    }
+  ],
+  "actions": [
+    { "id": "ACT-SYN-A1", "workstream_id": "WS-SYN-A", "description": "Draft a remediation proposal for FND-SYN-001", "required_authority": "PTAH", "blocked_by": [], "reversible": true },
+    { "id": "ACT-SYN-A2", "workstream_id": "WS-SYN-A", "description": "Run a supervised live payment test", "required_authority": "OPERATOR", "blocked_by": ["G-SYN-A2", "G-SYN-A3"], "reversible": false },
+    { "id": "ACT-SYN-B1", "workstream_id": "WS-SYN-B", "description": "Request security review of the tool surfaces", "required_authority": "PTAH", "blocked_by": [], "reversible": true },
+    { "id": "ACT-SYN-B2", "workstream_id": "WS-SYN-B", "description": "Deploy the server to a public HTTPS endpoint", "required_authority": "OPERATOR", "blocked_by": ["G-SYN-B2", "G-SYN-B3"], "reversible": true }
+  ],
+  "components": [
+    {
+      "id": "CMP-SYN-WEBHOOK",
+      "title": "Synthetic payment-event handler",
+      "readiness": "NOT_READY",
+      "evidence": [
+        { "claim": "Duplicate events are ignored", "evidence_class": "OBSERVED", "ref": "REC-SYN-001" },
+        { "claim": "Unsigned events are rejected", "evidence_class": "UNKNOWN", "ref": "FND-SYN-001" }
+      ],
+      "open_findings": ["FND-SYN-001"]
+    },
+    {
+      "id": "CMP-SYN-INTAKE",
+      "title": "Synthetic intake form validator",
+      "readiness": "READY_FOR_REVIEW",
+      "evidence": [
+        { "claim": "Required fields are enforced", "evidence_class": "OBSERVED", "ref": "REC-SYN-003" }
+      ],
+      "open_findings": ["FND-SYN-003"]
+    }
+  ],
+  "findings": [
+    {
+      "id": "FND-SYN-001",
+      "severity": "HIGH",
+      "component_id": "CMP-SYN-WEBHOOK",
+      "title": "Test harness accepts events without a signature check",
+      "evidence_class": "REPORTED",
+      "disposition": { "status": "HOLD", "recorded_by": "THOTH (synthetic fixture record)", "recorded_at": "2026-01-01T00:00:00Z", "clearance_requirements": ["Signature verification enforced", "Negative test for unsigned event passes"] }
+    },
+    {
+      "id": "FND-SYN-002",
+      "severity": "MEDIUM",
+      "component_id": "CMP-SYN-SUITE",
+      "title": "Tool surface review not yet performed",
+      "evidence_class": "UNKNOWN",
+      "disposition": null
+    },
+    {
+      "id": "FND-SYN-003",
+      "severity": "LOW",
+      "component_id": "CMP-SYN-INTAKE",
+      "title": "Validation error messages echo submitted values",
+      "evidence_class": "OBSERVED",
+      "disposition": { "status": "CLEARED_WITH_CONDITIONS", "recorded_by": "THOTH (synthetic fixture record)", "recorded_at": "2026-01-02T00:00:00Z", "clearance_requirements": ["Error text stops echoing input before live use"] }
+    }
+  ],
+  "repairs": [
+    { "finding_id": "FND-SYN-001", "summary": "Verify the provider signature before parsing the event body; reject with 400 on mismatch.", "files_in_scope": ["synthetic/webhook-handler.ts", "synthetic/webhook-handler.test.ts"], "tests_required": ["unsigned event rejected", "tampered body rejected", "valid signature accepted"], "rollback": "Revert the single commit; no data migration involved." },
+    { "finding_id": "FND-SYN-003", "summary": "Replace echoed values in validation errors with field names only.", "files_in_scope": ["synthetic/intake-validator.ts"], "tests_required": ["error text omits submitted value"], "rollback": "Revert the single commit." }
+  ],
+  "records": [
+    { "id": "REC-SYN-001", "title": "Idempotency test result", "value": "3 duplicate events produced 1 state transition", "evidence_class": "OBSERVED", "source_ref": "synthetic://test-run/001", "recorded_at": "2026-01-01T00:00:00Z", "recorded_by": "PTAH (synthetic fixture record)" },
+    { "id": "REC-SYN-002", "title": "Suite journey test result", "value": "client-to-receipt journey passed", "evidence_class": "OBSERVED", "source_ref": "synthetic://test-run/002", "recorded_at": "2026-01-01T00:00:00Z", "recorded_by": "PTAH (synthetic fixture record)" },
+    { "id": "REC-SYN-003", "title": "Intake validation result", "value": "missing required field rejected", "evidence_class": "OBSERVED", "source_ref": "synthetic://test-run/003", "recorded_at": "2026-01-01T00:00:00Z", "recorded_by": "PTAH (synthetic fixture record)" },
+    { "id": "REC-SYN-004", "title": "Delivery target (source A)", "value": "3 business days", "evidence_class": "REPORTED", "source_ref": "synthetic://doc/offer-a", "recorded_at": "2026-01-01T00:00:00Z", "recorded_by": "THEIA (synthetic fixture record)" },
+    { "id": "REC-SYN-005", "title": "Delivery target (source B)", "value": "5 business days", "evidence_class": "REPORTED", "source_ref": "synthetic://doc/offer-b", "recorded_at": "2026-01-03T00:00:00Z", "recorded_by": "THEIA (synthetic fixture record)" }
+  ],
+  "contradictions": [
+    { "id": "CTR-SYN-001", "record_ids": ["REC-SYN-004", "REC-SYN-005"], "description": "Two sources state different delivery targets.", "status": "UNRESOLVED", "resolution_owner": "OPERATOR" }
+  ],
+  "engagements": [
+    {
+      "id": "ENG-SYN-001", "client_id": "CLI-SYN-A", "client_label": "Synthetic Client A", "offer": "Audit engagement (synthetic)", "custody_stage": "fulfillment_started",
+      "milestones": [
+        {"id": "MS-SYN-001-1", "title": "Intake received", "state": "DONE", "client_visible": true},
+        {"id": "MS-SYN-001-2", "title": "Findings drafted", "state": "IN_PROGRESS", "client_visible": true},
+        {"id": "MS-SYN-001-3", "title": "Independent review recorded", "state": "PENDING", "client_visible": false},
+        {"id": "MS-SYN-001-4", "title": "Deliverable released", "state": "PENDING", "client_visible": true}
+      ],
+      "evidence": [
+        {"id": "EV-SYN-001-1", "title": "Intake form summary", "evidence_class": "OBSERVED", "client_visible": true, "ref": "synthetic://eng-001/intake"},
+        {"id": "EV-SYN-001-2", "title": "Draft findings working file", "evidence_class": "INFERRED", "client_visible": false, "ref": "synthetic://eng-001/draft"}
+      ],
+      "approvals": [
+        {"id": "AP-SYN-001-1", "title": "Release deliverable", "approver_role": "OPERATOR", "state": "PENDING", "client_visible": false},
+        {"id": "AP-SYN-001-2", "title": "Security disposition on draft", "approver_role": "THOTH", "state": "PENDING", "client_visible": false},
+        {"id": "AP-SYN-001-3", "title": "Client acceptance of deliverable", "approver_role": "CLIENT", "state": "PENDING", "client_visible": true}
+      ],
+      "internal_notes": ["Synthetic internal note A: reviewer slot not yet assigned."]
+    },
+    {
+      "id": "ENG-SYN-002", "client_id": "CLI-SYN-B", "client_label": "Synthetic Client B", "offer": "Audit engagement (synthetic)", "custody_stage": "paused",
+      "milestones": [
+        {"id": "MS-SYN-002-1", "title": "Intake received", "state": "DONE", "client_visible": true},
+        {"id": "MS-SYN-002-2", "title": "Findings drafted", "state": "BLOCKED", "client_visible": true}
+      ],
+      "evidence": [
+        {"id": "EV-SYN-002-1", "title": "Intake form summary", "evidence_class": "OBSERVED", "client_visible": true, "ref": "synthetic://eng-002/intake"}
+      ],
+      "approvals": [
+        {"id": "AP-SYN-002-1", "title": "Resume paused engagement", "approver_role": "OPERATOR", "state": "PENDING", "client_visible": false}
+      ],
+      "internal_notes": ["Synthetic internal note B: paused pending a payment-status check."]
+    }
+  ]
+}
